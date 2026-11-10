@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ms" translate="no" class="notranslate">
+<html lang="en" translate="no" class="notranslate">
 <head>
 <meta charset="utf-8">
 <meta name="google" content="notranslate">
@@ -246,12 +246,12 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 <div class="aurora" aria-hidden="true"></div>
 <main class="login" id="login" hidden>
   <h1 class="brand"><img class="logo" src="icon-192.png?v=2" alt="" width="40" height="40">Wishlist Kita</h1>
-  <p class="lead">Tempat kita simpan benda menarik dan tarikh penting.</p>
+  <p class="lead">Where we keep the things we love and the dates that matter.</p>
   <form class="box" id="login-form">
     <div class="field"><label for="l-email">Email</label><input id="l-email" type="email" autocomplete="username" required></div>
-    <div class="field"><label for="l-pass">Kata laluan</label><input id="l-pass" type="password" autocomplete="current-password" required></div>
+    <div class="field"><label for="l-pass">Password</label><input id="l-pass" type="password" autocomplete="current-password" required></div>
     <p class="err" id="l-err" role="alert"></p>
-    <button class="save" type="submit" id="l-btn">Masuk</button>
+    <button class="save" type="submit" id="l-btn">Sign in</button>
   </form>
 </main>
 
@@ -260,84 +260,84 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
     <h1 class="brand"><img class="logo" src="icon-192.png?v=2" alt="" width="40" height="40">Wishlist Kita</h1>
     <button class="menu-btn" id="menu-btn" type="button" aria-label="Menu" aria-expanded="false"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
   </header>
-  <p class="hello hello-top" id="hello">Selamat datang</p>
-  <div class="tiles" id="tiles" role="group" aria-label="Ringkasan"></div>
+  <p class="hello hello-top" id="hello">Welcome</p>
+  <div class="tiles" id="tiles" role="group" aria-label="Summary"></div>
   <div class="note-bar" id="status" hidden></div>
 
   <section class="sec" aria-labelledby="rem-l">
     <div class="sec-head">
-      <h3 class="label" id="rem-l">Peringatan akan datang</h3>
-      <button class="link-btn" id="rem-all" type="button">Lihat semua</button>
+      <h3 class="label" id="rem-l">Upcoming reminders</h3>
+      <button class="link-btn" id="rem-all" type="button">See all</button>
     </div>
     <ul class="rem-list" id="rem-list"></ul>
-    <div class="notif" id="notif" hidden><p id="notif-msg"></p><button type="button" id="notif-btn">Hidupkan</button></div>
+    <div class="notif" id="notif" hidden><p id="notif-msg"></p><button type="button" id="notif-btn">Turn on</button></div>
   </section>
 
   <section class="sec" aria-labelledby="list-l">
-    <h3 class="label" id="list-l">Simpanan</h3>
+    <h3 class="label" id="list-l">Saved</h3>
     <div class="tools">
-      <input class="search" id="q" type="search" placeholder="Cari nama, kedai, nota…" autocomplete="off">
-      <div class="chips" id="chips" role="group" aria-label="Kategori"></div>
+      <input class="search" id="q" type="search" placeholder="Search names, shops, notes…" autocomplete="off">
+      <div class="chips" id="chips" role="group" aria-label="Categories"></div>
       <div class="sub-tools">
         <span id="count"></span>
-        <button class="toggle" id="status-btn" type="button">Semua status</button>
+        <button class="toggle" id="status-btn" type="button">All statuses</button>
       </div>
     </div>
     <ul class="list" id="list"></ul>
   </section>
 </div>
 
-<button class="fab" id="fab" hidden type="button" aria-label="Simpan benda baru">
-  <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>Simpan
+<button class="fab" id="fab" hidden type="button" aria-label="Save something new">
+  <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>Add
 </button>
 
 <div class="scrim" id="scrim" hidden>
   <form class="sheet" id="form" novalidate>
     <div class="grab"></div>
-    <h2 id="form-title">Simpan benda baru</h2>
-    <div class="seg" id="seg" role="group" aria-label="Kategori"></div>
+    <h2 id="form-title">Save something new</h2>
+    <div class="seg" id="seg" role="group" aria-label="Categories"></div>
     <div class="field" id="f-url-w">
-      <label for="f-url">Pautan (Threads, IG, TikTok, Maps, Shopee…)</label>
-      <input id="f-url" type="url" inputmode="url" placeholder="Tampal pautan di sini">
+      <label for="f-url">Link (Threads, IG, TikTok, Maps, Shopee…)</label>
+      <input id="f-url" type="url" inputmode="url" placeholder="Paste a link here">
     </div>
     <div class="field">
-      <label for="f-title" id="f-title-l">Nama</label>
-      <input id="f-title" type="text" maxlength="120" placeholder="cth. Nasi lemak daun pisang Kg Baru">
+      <label for="f-title" id="f-title-l">Name</label>
+      <input id="f-title" type="text" maxlength="120" placeholder="e.g. Banana-leaf nasi lemak, Kg Baru">
     </div>
     <div class="two" id="f-extra">
-      <div class="field" id="f-place-w"><label for="f-place">Lokasi</label><input id="f-place" type="text" maxlength="80" placeholder="cth. Shah Alam"></div>
-      <div class="field" id="f-price-w"><label for="f-price">Harga (RM)</label><input id="f-price" type="text" inputmode="decimal" maxlength="20" placeholder="cth. 89"></div>
+      <div class="field" id="f-place-w"><label for="f-place">Location</label><input id="f-place" type="text" maxlength="80" placeholder="e.g. Shah Alam"></div>
+      <div class="field" id="f-price-w"><label for="f-price">Price (RM)</label><input id="f-price" type="text" inputmode="decimal" maxlength="20" placeholder="e.g. 89"></div>
     </div>
     <div id="f-rem-w">
       <div class="two">
-        <div class="field"><label for="f-date">Tarikh</label><input id="f-date" type="date"></div>
-        <div class="field"><label for="f-time">Masa (pilihan)</label><input id="f-time" type="time"></div>
+        <div class="field"><label for="f-date">Date</label><input id="f-date" type="date"></div>
+        <div class="field"><label for="f-time">Time (optional)</label><input id="f-time" type="time"></div>
       </div>
       <div class="field">
-        <label for="f-early">Peringatan awal</label>
+        <label for="f-early">Early alert</label>
         <select id="f-early">
-          <option value="">Tiada</option>
-          <option value="60">1 jam sebelum</option>
-          <option value="1440">1 hari sebelum</option>
-          <option value="10080">1 minggu sebelum</option>
-          <option value="custom">Tersuai…</option>
+          <option value="">None</option>
+          <option value="60">1 hour before</option>
+          <option value="1440">1 day before</option>
+          <option value="10080">1 week before</option>
+          <option value="custom">Custom…</option>
         </select>
       </div>
       <div class="two" id="f-custom-w" hidden>
-        <div class="field"><label for="f-early-n">Berapa</label><input id="f-early-n" type="number" inputmode="numeric" min="1" max="999" value="2"></div>
+        <div class="field"><label for="f-early-n">How many</label><input id="f-early-n" type="number" inputmode="numeric" min="1" max="999" value="2"></div>
         <div class="field"><label for="f-early-u">Unit</label>
-          <select id="f-early-u"><option value="1">minit sebelum</option><option value="60">jam sebelum</option><option value="1440" selected>hari sebelum</option><option value="10080">minggu sebelum</option></select></div>
+          <select id="f-early-u"><option value="1">minutes before</option><option value="60">hours before</option><option value="1440" selected>days before</option><option value="10080">weeks before</option></select></div>
       </div>
-      <p class="hint" style="margin:-4px 0 14px">Notifikasi keluar pada masa peringatan (9:00 pagi kalau tiada masa) dan pada peringatan awal yang dipilih.</p>
+      <p class="hint" style="margin:-4px 0 14px">You get a notification at the reminder time (9:00 AM if no time is set) and at the early alert you pick.</p>
     </div>
     <div class="field">
-      <label for="f-note">Nota</label>
-      <textarea id="f-note" maxlength="1000" placeholder="Kenapa menarik? Menu wajib cuba, saiz, waktu buka…"></textarea>
+      <label for="f-note">Notes</label>
+      <textarea id="f-note" maxlength="1000" placeholder="Why it’s worth it: must-try dishes, size, opening hours…"></textarea>
     </div>
     <p class="err" id="f-err" role="alert"></p>
     <div class="sheet-actions">
-      <button type="button" id="f-cancel">Batal</button>
-      <button type="submit" class="save" id="f-save">Simpan</button>
+      <button type="button" id="f-cancel">Cancel</button>
+      <button type="submit" class="save" id="f-save">Save</button>
     </div>
   </form>
 </div>
@@ -345,32 +345,32 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
   <nav class="drawer" id="drawer" aria-label="Menu">
     <div class="drawer-head">
       <span class="brand sm"><img class="logo" src="icon-192.png?v=2" alt="" width="32" height="32">Wishlist Kita</span>
-      <button class="menu-btn" id="drawer-close" type="button" aria-label="Tutup menu"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+      <button class="menu-btn" id="drawer-close" type="button" aria-label="Close menu"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
     </div>
     <p class="label d-label">Status</p>
     <ul class="d-list" id="d-status"></ul>
-    <p class="label d-label">Kategori</p>
+    <p class="label d-label">Categories</p>
     <ul class="d-list" id="d-cats"></ul>
-    <button class="d-add" id="d-add" type="button">+ Tambah kategori</button>
+    <button class="d-add" id="d-add" type="button">+ Add category</button>
     <div class="drawer-foot">
       <span class="who" id="who"></span>
-      <button class="out" id="logout" type="button">Keluar</button>
+      <button class="out" id="logout" type="button">Sign out</button>
     </div>
   </nav>
 </div>
 <div class="scrim" id="cat-scrim" hidden>
   <form class="sheet" id="cat-form" novalidate>
     <div class="grab"></div>
-    <h2>Kategori sendiri</h2>
+    <h2>Your categories</h2>
     <ul class="cat-list" id="cat-list"></ul>
-    <div class="field"><label for="c-name">Nama kategori baru</label><input id="c-name" type="text" maxlength="20" placeholder="cth. Tips, Foodies, Hadiah"></div>
-    <div class="field"><label>Warna</label><div class="swatches" id="c-colors"></div></div>
-    <div class="field"><label for="c-extra">Medan tambahan</label>
-      <select id="c-extra"><option value="">Tiada (pautan + nota sahaja)</option><option value="place">Lokasi</option><option value="price">Harga (RM)</option></select></div>
+    <div class="field"><label for="c-name">New category name</label><input id="c-name" type="text" maxlength="20" placeholder="e.g. Tips, Foodies, Gifts"></div>
+    <div class="field"><label>Colour</label><div class="swatches" id="c-colors"></div></div>
+    <div class="field"><label for="c-extra">Extra field</label>
+      <select id="c-extra"><option value="">None (link + notes only)</option><option value="place">Location</option><option value="price">Price (RM)</option></select></div>
     <p class="err" id="c-err" role="alert"></p>
     <div class="sheet-actions">
-      <button type="button" id="c-close">Tutup</button>
-      <button type="submit" class="save" id="c-save">Tambah kategori</button>
+      <button type="button" id="c-close">Close</button>
+      <button type="submit" class="save" id="c-save">Add category</button>
     </div>
   </form>
 </div>
@@ -380,11 +380,11 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
 const BUILTIN = {
-  makan:{label:"Makan", tint:"--c-makan", title:"Nama tempat / makanan", ph:"cth. Nasi lemak daun pisang Kg Baru"},
-  beli: {label:"Beli",  tint:"--c-beli",  title:"Nama barang", ph:"cth. Rak kasut kayu lipat"},
-  jalan:{label:"Jalan", tint:"--c-jalan", title:"Nama tempat", ph:"cth. Air terjun Sg. Gabai"},
-  idea: {label:"Idea",  tint:"--c-idea",  title:"Idea", ph:"cth. Resepi ayam masak merah"},
-  ingat:{label:"Ingat", tint:"--c-ingat", title:"Perlu ingat apa?", ph:"cth. Bayar cukai jalan"},
+  makan:{label:"Food", tint:"--c-makan", title:"Place or dish", ph:"e.g. Banana-leaf nasi lemak, Kg Baru"},
+  beli: {label:"Shopping",  tint:"--c-beli",  title:"Item name", ph:"e.g. Foldable wooden shoe rack"},
+  jalan:{label:"Places", tint:"--c-jalan", title:"Place name", ph:"e.g. Sg. Gabai waterfall"},
+  idea: {label:"Ideas",  tint:"--c-idea",  title:"Idea", ph:"e.g. Ayam masak merah recipe"},
+  ingat:{label:"Reminders", tint:"--c-ingat", title:"What to remember?", ph:"e.g. Renew road tax"},
 };
 let CATS = {...BUILTIN}, customCats = [];
 const PALETTE = ["#E0A030","#F2C230","#E06A4E","#E0457B","#D65A8E","#B05FD0","#7A6CE0","#5B8DEF",
@@ -395,26 +395,26 @@ const hasPrice = k => k === "beli" || CATS[k]?.extra === "price";
 function setCats(rows){
   customCats = rows;
   CATS = {...BUILTIN};
-  for (const c of rows) CATS[c.id] = {label:c.label, tint:c.color, title:"Nama", ph:"cth. " + c.label + " yang menarik", extra:c.extra || ""};
+  for (const c of rows) CATS[c.id] = {label:c.label, tint:c.color, title:"Name", ph:"e.g. a great " + c.label.toLowerCase() + " find", extra:c.extra || ""};
   if (state.cat !== "semua" && !CATS[state.cat]) state.cat = "semua";
 }
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const BULAN = ["Jan","Feb","Mac","Apr","Mei","Jun","Jul","Ogo","Sep","Okt","Nov","Dis"];
+const BULAN = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
 let items = [], sb = null, myId = null, names = {}, canWrite = true, channel = null;
 let state = {cat:"semua", q:"", status:"semua", view:"semua", open:null};
 try { const st = localStorage.getItem("sk-status"); if (st) state.status = st; else if (localStorage.getItem("sk-hide") === "1") state.status = "pending"; } catch(e) {}
-const STATUS = {semua:"Semua", pending:"Pending", done:"Completed"};
+const STATUS = {semua:"All", pending:"Pending", done:"Completed"};
 const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
 const TILES = {
-  today:    {label:"Hari Ini",    test: i => i.cat === "ingat" && !i.done && i.date === todayISO(),
+  today:    {label:"Today",    test: i => i.cat === "ingat" && !i.done && i.date === todayISO(),
              icon:`<svg viewBox="0 0 30 30"><rect x="3" y="6" width="24" height="21" rx="6" fill="#EF5B5B"/><rect x="8.5" y="3" width="3.2" height="7" rx="1.6" fill="#EF5B5B"/><rect x="18.3" y="3" width="3.2" height="7" rx="1.6" fill="#EF5B5B"/><rect x="3" y="12" width="24" height="2.2" fill="#fff" opacity=".7"/></svg>`},
-  scheduled:{label:"Akan Datang", test: i => i.cat === "ingat" && !i.done && i.date > todayISO(),
+  scheduled:{label:"Scheduled", test: i => i.cat === "ingat" && !i.done && i.date > todayISO(),
              icon:`<svg viewBox="0 0 30 30"><circle cx="15" cy="15" r="12.5" fill="#5B9BEF"/><path d="M15 8.5V15h5" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`},
-  fav:      {label:"Kegemaran",   test: i => !!i.fav,
+  fav:      {label:"Favourites",   test: i => !!i.fav,
              icon:`<svg viewBox="0 0 30 30"><path d="M15 26s-11-6.6-11-14.2C4 7.7 7 5 10.4 5c2 0 3.6 1 4.6 2.6C16 6 17.6 5 19.6 5 23 5 26 7.7 26 11.8 26 19.4 15 26 15 26z" fill="#F2B730"/></svg>`},
-  place:    {label:"Tempat",      test: i => !!i.place,
+  place:    {label:"Location",      test: i => !!i.place,
              icon:`<svg viewBox="0 0 30 30"><path d="M15 28s-9.5-9.2-9.5-15.5a9.5 9.5 0 0 1 19 0C24.5 18.8 15 28 15 28z" fill="#2FB5C6"/><circle cx="15" cy="12.5" r="3.6" fill="#fff"/></svg>`},
   pending:  {label:"Pending", status:"pending", test: i => !i.done,
              icon:`<svg viewBox="0 0 30 30"><rect x="4" y="4" width="22" height="22" rx="7" fill="#8C6CE0"/><path d="M10 12.5h10M10 17.5h7" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>`},
@@ -439,36 +439,36 @@ function fmtDate(iso){ const [y,m,d] = iso.split("-").map(Number); return `${d} 
 function fmtTime(t){
   if (!t) return "";
   const [h, m] = t.split(":").map(Number);
-  return `${h % 12 || 12}:${String(m).padStart(2,"0")} ${h < 12 ? "pg" : h < 19 ? "ptg" : "mlm"}`;
+  return `${h % 12 || 12}:${String(m).padStart(2,"0")} ${h < 12 ? "AM" : "PM"}`;
 }
 function earlyLabel(min){
   if (!min) return "";
-  if (min % 10080 === 0) return `${min/10080} minggu sebelum`;
-  if (min % 1440 === 0) return `${min/1440} hari sebelum`;
-  if (min % 60 === 0) return `${min/60} jam sebelum`;
-  return `${min} minit sebelum`;
+  if (min % 10080 === 0) return min === 10080 ? "1 week before" : `${min/10080} weeks before`;
+  if (min % 1440 === 0) return min === 1440 ? "1 day before" : `${min/1440} days before`;
+  if (min % 60 === 0) return min === 60 ? "1 hour before" : `${min/60} hours before`;
+  return min === 1 ? "1 minute before" : `${min} minutes before`;
 }
 function relDays(iso){
   const d = dayDiff(iso);
-  if (d === 0) return {t:"Hari ini", c:"today"};
-  if (d === 1) return {t:"Esok", c:"soon"};
-  if (d < 0) return {t:`Lewat ${-d} hari`, c:"late"};
-  return {t:`${d} hari lagi`, c: d <= 7 ? "soon" : ""};
+  if (d === 0) return {t:"Today", c:"today"};
+  if (d === 1) return {t:"Tomorrow", c:"soon"};
+  if (d < 0) return {t: d === -1 ? "1 day overdue" : `${-d} days overdue`, c:"late"};
+  return {t:`In ${d} days`, c: d <= 7 ? "soon" : ""};
 }
 function ago(ts){
   const d = Math.floor((Date.now() - ts) / 864e5);
-  if (d <= 0) return "hari ini"; if (d === 1) return "semalam";
-  if (d < 30) return `${d} hari lepas`;
+  if (d <= 0) return "today"; if (d === 1) return "yesterday";
+  if (d < 30) return `${d} days ago`;
   const dt = new Date(ts); return `${dt.getDate()} ${BULAN[dt.getMonth()]}`;
 }
-function who(id){ if (!id) return ""; if (id.toLowerCase() === (myId||"").toLowerCase()) return "Saya"; return names[id.toLowerCase()] || "Pasangan"; }
+function who(id){ if (!id) return ""; if (id.toLowerCase() === (myId||"").toLowerCase()) return "Me"; return names[id.toLowerCase()] || "Partner"; }
 function toast(msg){ const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 1800); }
 function status(msg){ const s = $("#status"); s.textContent = msg || ""; s.hidden = !msg; }
 
 /* ---------- greeting ---------- */
 (function(){
   const h = new Date().getHours();
-  $("#hello").textContent = h < 12 ? "Selamat pagi, sayang" : h < 14 ? "Selamat tengah hari, sayang" : h < 19 ? "Selamat petang, sayang" : "Selamat malam, sayang";
+  $("#hello").textContent = h < 12 ? "Good morning, love" : h < 18 ? "Good afternoon, love" : "Good evening, love";
 })();
 
 /* ---------- render ---------- */
@@ -486,16 +486,16 @@ function render(){
   // reminders strip
   const top = upcoming.slice(0,3);
   $("#rem-list").innerHTML = top.length ? top.map(remRow).join("") :
-    `<li class="empty-mini">Tiada peringatan. Tekan <b>Simpan</b> dan pilih <b>Ingat</b> untuk tambah tarikh penting.</li>`;
+    `<li class="empty-mini">No reminders. Tap <b>Add</b> and choose <b>Reminders</b> to add an important date.</li>`;
   $("#rem-all").hidden = !rems.length;
 
   // chips
   const counts = {semua: items.length};
   for (const k in CATS) counts[k] = items.filter(i => i.cat === k).length;
-  $("#chips").innerHTML = [["semua","Semua"], ...Object.entries(CATS).sort((x, y) => counts[y[0]] - counts[x[0]]).map(([k,v]) => [k, v.label])].map(([k,l]) =>
-    `<button type="button" class="chip" data-cat="${k}" aria-pressed="${state.cat===k}">${k!=="semua"?`<span class="dot" style="--cc:${tintCss(CATS[k])}"></span>`:""}${esc(l)}<span class="n">${counts[k]}</span></button>`).join("") + (canWrite ? `<button type="button" class="chip new" id="chip-new">+ Kategori</button>` : "");
+  $("#chips").innerHTML = [["semua","All"], ...Object.entries(CATS).sort((x, y) => counts[y[0]] - counts[x[0]]).map(([k,v]) => [k, v.label])].map(([k,l]) =>
+    `<button type="button" class="chip" data-cat="${k}" aria-pressed="${state.cat===k}">${k!=="semua"?`<span class="dot" style="--cc:${tintCss(CATS[k])}"></span>`:""}${esc(l)}<span class="n">${counts[k]}</span></button>`).join("") + (canWrite ? `<button type="button" class="chip new" id="chip-new">+ Category</button>` : "");
   const active = [state.view !== "semua" ? TILES[state.view].label : "", state.status !== "semua" ? STATUS[state.status] : ""].filter(Boolean).join(" · ");
-  $("#status-btn").textContent = active ? active + " ✕" : "Semua status";
+  $("#status-btn").textContent = active ? active + " ✕" : "All statuses";
   $("#status-btn").setAttribute("aria-pressed", !!active);
   if (!$("#drawer-scrim").hidden) renderDrawer();
 
@@ -509,26 +509,26 @@ function render(){
     if (a.cat === "ingat" && b.cat === "ingat") return (a.done - b.done) || String(a.date||"").localeCompare(String(b.date||""));
     return (b.fav?1:0) - (a.fav?1:0) || (b.createdAt||0) - (a.createdAt||0);
   });
-  $("#count").textContent = list.length ? `${list.length} ${state.cat==="semua"?"item":(CATS[state.cat]?.label || "item").toLowerCase()}` : "";
+  $("#count").textContent = list.length ? `${list.length} ${list.length === 1 ? "item" : "items"}` : "";
   $("#list").innerHTML = list.length ? list.map(itemRow).join("") : emptyState(q);
 }
 function remRow(i){
   const r = relDays(i.date);
   return `<li class="rem${i.done?" done":""}">
-    <button type="button" class="check" data-act="done" data-id="${esc(i.id)}" aria-pressed="${!!i.done}" aria-label="Tanda selesai"><svg viewBox="0 0 12 12"><path d="M2.5 6.2l2.3 2.3 4.7-5" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <button type="button" class="check" data-act="done" data-id="${esc(i.id)}" aria-pressed="${!!i.done}" aria-label="Mark as done"><svg viewBox="0 0 12 12"><path d="M2.5 6.2l2.3 2.3 4.7-5" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <div style="min-width:0"><div class="rem-title">${esc(i.title)}</div><div class="rem-sub">${fmtDate(i.date)}${i.at_time?` · ${fmtTime(i.at_time)}`:""}${i.early_min?` · 🔔 ${earlyLabel(i.early_min)}`:""}${i.note?` · ${esc(i.note.split("\n")[0]).slice(0,60)}`:""}</div></div>
     <span class="days ${r.c}">${r.t}</span></li>`;
 }
 function itemRow(i){
   const c = CATS[i.cat] || CATS.idea, open = state.open === i.id, src = source(i.url);
   const meta = [];
-  if (i.cat === "ingat" && i.date){ const r = relDays(i.date); meta.push(`<span>${fmtDate(i.date)}${i.at_time?`, ${fmtTime(i.at_time)}`:""}</span>${i.early_min?`<span>🔔 ${earlyLabel(i.early_min)}</span>`:""}<span class="days ${r.c}">${i.done?"Selesai":r.t}</span>`); }
+  if (i.cat === "ingat" && i.date){ const r = relDays(i.date); meta.push(`<span>${fmtDate(i.date)}${i.at_time?`, ${fmtTime(i.at_time)}`:""}</span>${i.early_min?`<span>🔔 ${earlyLabel(i.early_min)}</span>`:""}<span class="days ${r.c}">${i.done?"Done":r.t}</span>`); }
   if (src) meta.push(`<span class="src">${esc(src)} ↗</span>`);
   if (i.place) meta.push(`<span>${esc(i.place)}</span>`);
   if (i.price) meta.push(`<span>RM ${esc(i.price)}</span>`);
-  if (i.done && i.cat !== "ingat") meta.push(`<span class="badge-done">${i.cat==="beli"?"Dah beli":i.cat==="makan"?"Dah makan":i.cat==="jalan"?"Dah pergi":"Dah buat"}</span>`);
+  if (i.done && i.cat !== "ingat") meta.push(`<span class="badge-done">${i.cat==="beli"?"Bought":i.cat==="makan"?"Tried":i.cat==="jalan"?"Visited":"Done"}</span>`);
   meta.push(`<span>${esc([who(i.by), ago(i.createdAt||Date.now())].filter(Boolean).join(" · "))}</span>`);
-  const doneLbl = i.done ? "Tanda belum" : i.cat==="beli"?"Dah beli":i.cat==="makan"?"Dah makan":i.cat==="jalan"?"Dah pergi":"Tanda selesai";
+  const doneLbl = i.done ? "Mark not done" : i.cat==="beli"?"Bought it":i.cat==="makan"?"Tried it":i.cat==="jalan"?"Been there":"Mark done";
   return `<li class="item${open?" open":""}${i.done?" done":""}">
     <div class="row">
       <button type="button" class="row-main" data-act="open" data-id="${esc(i.id)}" aria-expanded="${open}" style="background:none;border:0;padding:0;text-align:left">
@@ -537,20 +537,20 @@ function itemRow(i){
         ${i.note?`<span class="desc">${esc(i.note)}</span>`:""}
         <span class="meta">${meta.join("")}</span>
       </button>
-      <button type="button" class="star" data-act="fav" data-id="${esc(i.id)}" aria-pressed="${!!i.fav}" aria-label="Kegemaran"><svg viewBox="0 0 24 24"><path d="M12 20.3s-7.5-4.6-9.2-9.3C1.6 7.6 3.9 4.5 7.2 4.5c2 0 3.6 1.1 4.8 2.8 1.2-1.7 2.8-2.8 4.8-2.8 3.3 0 5.6 3.1 4.4 6.5-1.7 4.7-9.2 9.3-9.2 9.3z" stroke-linejoin="round"/></svg></button>
+      <button type="button" class="star" data-act="fav" data-id="${esc(i.id)}" aria-pressed="${!!i.fav}" aria-label="Favourite"><svg viewBox="0 0 24 24"><path d="M12 20.3s-7.5-4.6-9.2-9.3C1.6 7.6 3.9 4.5 7.2 4.5c2 0 3.6 1.1 4.8 2.8 1.2-1.7 2.8-2.8 4.8-2.8 3.3 0 5.6 3.1 4.4 6.5-1.7 4.7-9.2 9.3-9.2 9.3z" stroke-linejoin="round"/></svg></button>
     </div>
     ${open?`<div class="actions">
-      ${i.url?`<a class="act primary" href="${esc(i.url)}" target="_blank" rel="noopener noreferrer">Buka ${esc(src||"pautan")} ↗</a>`:""}
+      ${i.url?`<a class="act primary" href="${esc(i.url)}" target="_blank" rel="noopener noreferrer">Open ${esc(src||"link")} ↗</a>`:""}
       <button type="button" class="act" data-act="done" data-id="${esc(i.id)}">${doneLbl}</button>
-      <button type="button" class="act" data-act="edit" data-id="${esc(i.id)}">Ubah</button>
-      <button type="button" class="act danger" data-act="del" data-id="${esc(i.id)}">Padam</button>
+      <button type="button" class="act" data-act="edit" data-id="${esc(i.id)}">Edit</button>
+      <button type="button" class="act danger" data-act="del" data-id="${esc(i.id)}">Delete</button>
     </div>`:""}
   </li>`;
 }
 function emptyState(q){
-  if (!items.length) return `<li class="empty"><h3>Belum ada apa-apa lagi</h3><p>Jumpa kedai makan atau barang best kat Threads? Salin pautan, tekan <b>Simpan</b>, dan tampal. Nanti senang cari balik.</p></li>`;
-  if (q) return `<li class="empty"><h3>Tiada padanan</h3><p>Tak jumpa apa-apa untuk "${esc(q)}". Cuba perkataan lain.</p></li>`;
-  return `<li class="empty"><h3>Kosong di sini</h3><p>Tiada item dalam kategori ini lagi.</p></li>`;
+  if (!items.length) return `<li class="empty"><h3>Nothing here yet</h3><p>Found a great place to eat or something to buy on Threads? Copy the link, tap <b>Add</b> and paste it. Easy to find again later.</p></li>`;
+  if (q) return `<li class="empty"><h3>No matches</h3><p>Nothing found for "${esc(q)}". Try another word.</p></li>`;
+  return `<li class="empty"><h3>Nothing here</h3><p>No items match this filter yet.</p></li>`;
 }
 
 /* ---------- data writes ---------- */
@@ -560,8 +560,8 @@ async function write(id, body, isNew){
   const q = isNew ? sb.from("items").insert({id, ...toRow(body)}) : sb.from("items").update(toRow(body)).eq("id", id);
   const { error } = await q;
   if (error){
-    if (error.code === "42501") toast("Akaun ini tiada dalam senarai ahli.");
-    else toast("Tak dapat simpan. Semak internet dan cuba lagi.");
+    if (error.code === "42501") toast("This account isn’t on the members list.");
+    else toast("Couldn’t save. Check your connection and try again.");
     load(); throw error;
   }
   load();
@@ -569,7 +569,7 @@ async function write(id, body, isNew){
 async function remove(id){
   items = items.filter(i => i.id !== id); render();
   const { error } = await sb.from("items").delete().eq("id", id);
-  if (error){ toast("Tak dapat padam. Cuba lagi."); load(); } else toast("Dipadam");
+  if (error){ toast("Couldn’t delete. Try again."); load(); } else toast("Deleted");
 }
 
 /* ---------- events ---------- */
@@ -580,12 +580,12 @@ document.addEventListener("click", async e => {
   const act = b.dataset.act;
   if (act === "open"){ state.open = state.open === id ? null : id; armed = null; render(); return; }
   if (act === "fav"){ it.fav = !it.fav; render(); write(id, {fav: it.fav}).catch(()=>{}); return; }
-  if (act === "done"){ it.done = !it.done; render(); write(id, {done: it.done}).catch(()=>{}); if (it.done) toast(it.cat==="ingat"?"Selesai":"Ditanda"); return; }
+  if (act === "done"){ it.done = !it.done; render(); write(id, {done: it.done}).catch(()=>{}); if (it.done) toast("Marked done"); return; }
   if (act === "edit"){ openSheet(it); return; }
   if (act === "del"){
     if (armed === id){ armed = null; state.open = null; remove(id); return; }
-    armed = id; b.textContent = "Tekan lagi untuk padam"; b.classList.add("armed");
-    setTimeout(() => { if (armed === id){ armed = null; b.textContent = "Padam"; b.classList.remove("armed"); } }, 3000);
+    armed = id; b.textContent = "Tap again to delete"; b.classList.add("armed");
+    setTimeout(() => { if (armed === id){ armed = null; b.textContent = "Delete"; b.classList.remove("armed"); } }, 3000);
   }
 });
 $("#chips").addEventListener("click", e => { if (e.target.closest("#chip-new")) { openCats(false); return; } const c = e.target.closest(".chip"); if (!c) return; state.cat = c.dataset.cat; state.open = null; render(); });
@@ -610,7 +610,7 @@ function renderDrawer(){
   $("#d-status").innerHTML = Object.entries(STATUS).map(([k,l]) =>
     `<li><button type="button" class="d-item" data-status="${k}" aria-current="${state.status===k}"><span class="ic${k==="pending"?" ring":""}" style="--cc:${k==="done"?"var(--ok)":k==="pending"?"var(--accent)":"var(--muted)"}"></span>${l}<span class="n">${sc[k]}</span></button></li>`).join("");
   const cc = {semua: items.length}; for (const k in CATS) cc[k] = items.filter(i => i.cat === k).length;
-  $("#d-cats").innerHTML = [["semua", {label:"Semua kategori"}], ...Object.entries(CATS).sort((x, y) => cc[y[0]] - cc[x[0]])].map(([k,c]) =>
+  $("#d-cats").innerHTML = [["semua", {label:"All categories"}], ...Object.entries(CATS).sort((x, y) => cc[y[0]] - cc[x[0]])].map(([k,c]) =>
     `<li><button type="button" class="d-item" data-dcat="${esc(k)}" aria-current="${state.cat===k}"><span class="ic" style="--cc:${k==="semua"?"var(--faint)":tintCss(c)}"></span>${esc(c.label)}<span class="n">${cc[k]}</span></button></li>`).join("");
   $("#d-add").hidden = !canWrite;
 }
@@ -636,7 +636,7 @@ function setFormCat(k){
   formCat = k; const c = CATS[k];
   $("#seg").innerHTML = Object.entries(CATS).map(([key,v]) =>
     `<button type="button" data-k="${key}" aria-pressed="${key===k}" style="--cc:${tintCss(v)}"><span class="dot"></span>${esc(v.label)}</button>`).join("")
-    + `<button type="button" class="new" data-new="1"><span class="plus">+</span>Baru</button>`;
+    + `<button type="button" class="new" data-new="1"><span class="plus">+</span>New</button>`;
   $("#f-title-l").textContent = c.title; $("#f-title").placeholder = c.ph;
   $("#f-place-w").hidden = !hasPlace(k);
   $("#f-price-w").hidden = !hasPrice(k);
@@ -649,10 +649,10 @@ $("#seg").addEventListener("click", e => {
   const b = e.target.closest("[data-k]"); if (b) setFormCat(b.dataset.k);
 });
 function openSheet(it){
-  if (!canWrite){ toast("Akaun ini cuma boleh lihat."); return; }
+  if (!canWrite){ toast("This account can only view."); return; }
   editing = it || null;
-  $("#form-title").textContent = it ? "Ubah simpanan" : "Simpan benda baru";
-  $("#f-save").textContent = it ? "Simpan perubahan" : "Simpan";
+  $("#form-title").textContent = it ? "Edit item" : "Save something new";
+  $("#f-save").textContent = it ? "Save changes" : "Save";
   setFormCat(it ? it.cat : (state.cat !== "semua" ? state.cat : "makan"));
   $("#f-url").value = it?.url || ""; $("#f-title").value = it?.title || "";
   $("#f-place").value = it?.place || ""; $("#f-price").value = it?.price || "";
@@ -692,12 +692,12 @@ $("#form").addEventListener("submit", async e => {
   const k = formCat;
   let url = k === "ingat" ? "" : $("#f-url").value.trim();
   if (url && !/^https?:\/\//i.test(url)) url = "https://" + url;
-  if (url){ try { new URL(url); } catch(_) { $("#f-err").textContent = "Pautan tak sah. Tampal pautan penuh dari aplikasi."; return; } }
+  if (url){ try { new URL(url); } catch(_) { $("#f-err").textContent = "That link doesn’t look right. Paste the full link from the app."; return; } }
   let title = $("#f-title").value.trim();
-  if (!title && url) title = (source(url) || "Pautan") + " yang disimpan";
+  if (!title && url) title = "Saved from " + (source(url) || "a link");
   if (!title){ $("#f-err").textContent = "Tulis nama dulu."; $("#f-title").focus(); return; }
   const date = $("#f-date").value;
-  if (k === "ingat" && !date){ $("#f-err").textContent = "Pilih tarikh untuk peringatan."; $("#f-date").focus(); return; }
+  if (k === "ingat" && !date){ $("#f-err").textContent = "Pick a date for the reminder."; $("#f-date").focus(); return; }
   const body = {
     cat:k, title, url,
     note: $("#f-note").value.trim(),
@@ -709,12 +709,12 @@ $("#form").addEventListener("submit", async e => {
   };
   $("#f-save").disabled = true;
   try {
-    if (editing){ await write(editing.id, body, false); toast("Dikemas kini"); }
+    if (editing){ await write(editing.id, body, false); toast("Updated"); }
     else {
       const id = (crypto.randomUUID ? crypto.randomUUID() : "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c => (c ^ Math.random() * 16 >> c / 4).toString(16)));
       items.push({id, ...body, done:false, fav:false, by: myId, createdAt: Date.now()}); render();
       await write(id, {...body, done:false, fav:false}, true);
-      toast("Disimpan");
+      toast("Saved");
       if (state.cat !== "semua" && state.cat !== k) state.cat = k;
     }
     closeSheet();
@@ -727,13 +727,13 @@ function renderCatSheet(){
   const counts = {}; for (const i of items) counts[i.cat] = (counts[i.cat] || 0) + 1;
   $("#cat-list").innerHTML = customCats.length ? customCats.map(c => `<li class="cat-row">
       <span class="dot" style="--cc:${esc(c.color)};width:10px;height:10px"></span>
-      <span class="nm">${esc(c.label)}<small>${counts[c.id] || 0} item${c.extra === "place" ? " · ada lokasi" : c.extra === "price" ? " · ada harga" : ""}</small></span>
-      <button type="button" class="act danger${catArmed === c.id ? " armed" : ""}" data-del-cat="${esc(c.id)}">${catArmed === c.id ? "Pasti padam?" : "Padam"}</button></li>`).join("")
-    : `<li class="empty-mini">Belum ada kategori sendiri. Tambah satu di bawah.</li>`;
-  $("#c-colors").innerHTML = PALETTE.map(c => `<button type="button" class="swatch" style="--sw:${c}" data-color="${c}" aria-pressed="${c === catColor}" aria-label="Warna"></button>`).join("");
+      <span class="nm">${esc(c.label)}<small>${counts[c.id] || 0} ${(counts[c.id] || 0) === 1 ? "item" : "items"}${c.extra === "place" ? " · with location" : c.extra === "price" ? " · with price" : ""}</small></span>
+      <button type="button" class="act danger${catArmed === c.id ? " armed" : ""}" data-del-cat="${esc(c.id)}">${catArmed === c.id ? "Sure?" : "Delete"}</button></li>`).join("")
+    : `<li class="empty-mini">No categories of your own yet. Add one below.</li>`;
+  $("#c-colors").innerHTML = PALETTE.map(c => `<button type="button" class="swatch" style="--sw:${c}" data-color="${c}" aria-pressed="${c === catColor}" aria-label="Colour"></button>`).join("");
 }
 function openCats(fromForm){
-  if (!canWrite) { toast("Akaun ini cuma boleh lihat."); return; }
+  if (!canWrite) { toast("This account can only view."); return; }
   catFromForm = fromForm; catArmed = null;
   catColor = PALETTE[customCats.length % PALETTE.length];
   $("#c-name").value = ""; $("#c-extra").value = ""; $("#c-err").textContent = "";
@@ -753,22 +753,22 @@ $("#cat-scrim").addEventListener("click", async e => {
   catArmed = null;
   const moved = await sb.from("items").update({ cat: "idea" }).eq("cat", id);
   const { error } = moved.error ? moved : await sb.from("categories").delete().eq("id", id);
-  if (error) { toast("Tak dapat padam kategori. Cuba lagi."); return; }
-  toast("Kategori dipadam. Item dipindah ke Idea.");
+  if (error) { toast("Couldn’t delete the category. Try again."); return; }
+  toast("Category deleted. Its items moved to Ideas.");
   await Promise.all([loadCats(), load()]); renderCatSheet();
 });
 $("#cat-form").addEventListener("submit", async e => {
   e.preventDefault();
   const label = $("#c-name").value.trim().replace(/\s+/g, " ");
-  if (!label) { $("#c-err").textContent = "Tulis nama kategori dulu."; $("#c-name").focus(); return; }
-  if (Object.values(CATS).some(c => c.label.toLowerCase() === label.toLowerCase())) { $("#c-err").textContent = "Kategori ini dah ada."; return; }
+  if (!label) { $("#c-err").textContent = "Type a category name first."; $("#c-name").focus(); return; }
+  if (Object.values(CATS).some(c => c.label.toLowerCase() === label.toLowerCase())) { $("#c-err").textContent = "That category already exists."; return; }
   const id = "c-" + Math.random().toString(36).slice(2, 8);
   $("#c-save").disabled = true;
   const { error } = await sb.from("categories").insert({ id, label, color: catColor, extra: $("#c-extra").value || null });
   $("#c-save").disabled = false;
-  if (error) { $("#c-err").textContent = "Tak dapat simpan. Cuba lagi."; return; }
+  if (error) { $("#c-err").textContent = "Couldn’t save. Try again."; return; }
   await loadCats();
-  toast(`Kategori ${label} ditambah`);
+  toast(`Added ${label}`);
   closeCats();
   if (catFromForm && !$("#scrim").hidden) setFormCat(id);
 });
@@ -796,10 +796,10 @@ function notifUI(mode){
   const box = $("#notif"), msg = $("#notif-msg"), btn = $("#notif-btn");
   if (mode === "on"){ box.hidden = true; return; }
   box.hidden = false; box.classList.toggle("on", mode === "on"); btn.hidden = mode !== "off";
-  if (mode === "off") msg.textContent = "Dapatkan notifikasi sehari sebelum dan pada hari peringatan (9 pagi).";
-  if (mode === "on") msg.textContent = "🔔 Notifikasi hidup di telefon ini: sehari sebelum & pada hari, 9 pagi.";
-  if (mode === "install") msg.textContent = "Untuk notifikasi, pasang app ini ke Home Screen dulu (Share → Add to Home Screen), kemudian buka dari ikon.";
-  if (mode === "blocked") msg.textContent = "Notifikasi disekat. Benarkan dalam tetapan telefon untuk app ini.";
+  if (mode === "off") msg.textContent = "Get notified before and when your reminders are due.";
+  if (mode === "on") msg.textContent = "🔔 Notifications are on for this phone.";
+  if (mode === "install") msg.textContent = "To get notifications, add this app to your Home Screen first (Share → Add to Home Screen), then open it from the icon.";
+  if (mode === "blocked") msg.textContent = "Notifications are blocked. Allow them for this app in your phone settings.";
 }
 async function saveSub(sub){
   const j = sub.toJSON();
@@ -828,8 +828,8 @@ $("#notif-btn").addEventListener("click", async () => {
     const reg = await navigator.serviceWorker.ready;
     const sub = await reg.pushManager.getSubscription() || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(await vapidKey()) });
     await saveSub(sub);
-    notifUI("on"); toast("Notifikasi dihidupkan");
-  } catch(e) { toast("Tak dapat hidupkan notifikasi. Cuba lagi."); }
+    notifUI("on"); toast("Notifications on");
+  } catch(e) { toast("Couldn’t turn on notifications. Try again."); }
   finally { btn.disabled = false; }
 });
 
@@ -840,13 +840,13 @@ async function load(){
   const my = ++loading;
   const { data, error } = await sb.from("items").select("*").order("created_at", {ascending:false});
   if (my !== loading) return;
-  if (error){ status("Tak dapat muatkan simpanan. Semak internet."); return; }
+  if (error){ status("Couldn’t load your items. Check your connection."); return; }
   status(""); items = data.map(fromRow); render();
 }
 async function loadNames(){
   const { data } = await sb.from("members").select("email,name");
   if (!data) return;
-  if (!data.length){ status("Email ini tiada dalam senarai ahli. Tambah dalam jadual members di Supabase."); canWrite = false; $("#fab").hidden = true; }
+  if (!data.length){ status("This email isn’t on the members list. Add it to the members table in Supabase."); canWrite = false; $("#fab").hidden = true; }
   for (const m of data) names[m.email.toLowerCase()] = m.name;
   const me = names[(myId||"").toLowerCase()]; $("#who").textContent = me || "";
   render();
@@ -855,7 +855,7 @@ function showLogin(){ $("#app").hidden = true; $("#fab").hidden = true; $("#logi
 async function showApp(session){
   myId = session.user.email;
   $("#login").hidden = true; $("#app").hidden = false; $("#fab").hidden = !canWrite;
-  render(); status("Memuatkan simpanan…");
+  render(); status("Loading…");
   await Promise.all([load(), loadNames(), loadCats()]);
   checkNotif();
   if (!channel){
@@ -870,7 +870,7 @@ $("#login-form").addEventListener("submit", async e => {
   $("#l-err").textContent = ""; $("#l-btn").disabled = true;
   const { error } = await sb.auth.signInWithPassword({ email: $("#l-email").value.trim(), password: $("#l-pass").value });
   $("#l-btn").disabled = false;
-  if (error) $("#l-err").textContent = "Email atau kata laluan salah.";
+  if (error) $("#l-err").textContent = "Wrong email or password.";
 });
 $("#logout").addEventListener("click", async () => { await sb.auth.signOut(); });
 document.addEventListener("visibilitychange", () => { if (!document.hidden && myId) load(); });
@@ -878,7 +878,7 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden && my
 (function boot(){
   const cfg = window.WISHLIST_CONFIG || {};
   if (!window.supabase || !cfg.url || cfg.url.includes("ISI_")){
-    $("#app").hidden = false; status("Belum disambung ke Supabase. Isi config.js dengan Project URL dan anon key.");
+    $("#app").hidden = false; status("Not connected to Supabase yet. Fill in config.js with the Project URL and anon key.");
     canWrite = false; $("#logout").hidden = true; render(); return;
   }
   sb = supabase.createClient(cfg.url, cfg.anonKey, { auth: { persistSession: true, autoRefreshToken: true } });

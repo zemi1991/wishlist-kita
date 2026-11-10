@@ -5,7 +5,7 @@ import webpush from "npm:web-push@3.6.7";
 import { createClient } from "npm:@supabase/supabase-js@2.45.4";
 
 const APP_URL = "https://zemi1991.github.io/wishlist-kita/";
-const BULAN = ["Jan","Feb","Mac","Apr","Mei","Jun","Jul","Ogo","Sep","Okt","Nov","Dis"];
+const BULAN = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
 const sb = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 const CORS = { "Access-Control-Allow-Origin": "*", "Access-Control-Allow-Headers": "authorization, apikey, content-type" };
@@ -24,7 +24,7 @@ const MYT = 8 * 3600e3;
 const fmtDate = (iso: string) => { const [y, m, d] = iso.split("-").map(Number); return `${d} ${BULAN[m - 1]} ${y}`; };
 const fmtTime = (t: string) => {
   const [h, m] = t.split(":").map(Number);
-  const suf = h < 12 ? "pg" : h < 19 ? "ptg" : "mlm";
+  const suf = h < 12 ? "AM" : "PM";
   return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${suf}`;
 };
 // Waktu peringatan (UTC ms) dari tarikh + masa waktu Malaysia; tiada masa = 9:00 pagi
@@ -34,10 +34,10 @@ const eventAt = (date: string, time?: string | null) => {
   return Date.UTC(y, mo - 1, d, h, mi) - MYT;
 };
 const before = (min: number) =>
-  min % 10080 === 0 ? (min === 10080 ? "Minggu depan" : `Dalam ${min / 10080} minggu`)
-  : min % 1440 === 0 ? (min === 1440 ? "Esok" : `Dalam ${min / 1440} hari`)
-  : min % 60 === 0 ? `Dalam ${min / 60} jam`
-  : `Dalam ${min} minit`;
+  min % 10080 === 0 ? (min === 10080 ? "Next week" : `In ${min / 10080} weeks`)
+  : min % 1440 === 0 ? (min === 1440 ? "Tomorrow" : `In ${min / 1440} days`)
+  : min % 60 === 0 ? (min === 60 ? "In 1 hour" : `In ${min / 60} hours`)
+  : `In ${min} minutes`;
 
 const WINDOW = 60 * 60e3; // hantar yang terlepas sehingga 1 jam lewat
 
@@ -62,7 +62,7 @@ Deno.serve(async (req) => {
     const ev = eventAt(it.date, it.at_time);
     const when = [fmtDate(it.date), it.at_time ? fmtTime(it.at_time) : ""].filter(Boolean).join(", ");
     const alerts: { at: number; title: string }[] = [
-      { at: ev, title: it.at_time ? `Sekarang: ${it.title}` : `Hari ini: ${it.title}` },
+      { at: ev, title: it.at_time ? `Now: ${it.title}` : `Today: ${it.title}` },
     ];
     if (it.early_min && it.early_min > 0) alerts.push({ at: ev - it.early_min * 60e3, title: `${before(it.early_min)}: ${it.title}` });
     for (const a of alerts) {
