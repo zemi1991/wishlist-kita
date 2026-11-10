@@ -144,7 +144,8 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
 .field label{font-size:12.5px;font-weight:700;color:var(--muted)}
 .field input,.field textarea{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:11px 13px;font-size:15.5px;outline:none;width:100%}
-.field input:focus,.field textarea:focus{border-color:var(--accent)}
+.field select{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:11px 13px;font-size:15.5px;outline:none;width:100%;appearance:none;-webkit-appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 18px) 50%,calc(100% - 13px) 50%;background-size:5px 5px;background-repeat:no-repeat}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent)}
 .field textarea{min-height:84px;resize:vertical}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .hint{font-size:12.5px;color:var(--muted)}
@@ -229,7 +230,28 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
     <div class="two" id="f-extra">
       <div class="field" id="f-place-w"><label for="f-place">Lokasi</label><input id="f-place" type="text" maxlength="80" placeholder="cth. Shah Alam"></div>
       <div class="field" id="f-price-w"><label for="f-price">Harga (RM)</label><input id="f-price" type="text" inputmode="decimal" maxlength="20" placeholder="cth. 89"></div>
-      <div class="field" id="f-date-w"><label for="f-date">Tarikh</label><input id="f-date" type="date"></div>
+    </div>
+    <div id="f-rem-w">
+      <div class="two">
+        <div class="field"><label for="f-date">Tarikh</label><input id="f-date" type="date"></div>
+        <div class="field"><label for="f-time">Masa (pilihan)</label><input id="f-time" type="time"></div>
+      </div>
+      <div class="field">
+        <label for="f-early">Peringatan awal</label>
+        <select id="f-early">
+          <option value="">Tiada</option>
+          <option value="60">1 jam sebelum</option>
+          <option value="1440">1 hari sebelum</option>
+          <option value="10080">1 minggu sebelum</option>
+          <option value="custom">Tersuai…</option>
+        </select>
+      </div>
+      <div class="two" id="f-custom-w" hidden>
+        <div class="field"><label for="f-early-n">Berapa</label><input id="f-early-n" type="number" inputmode="numeric" min="1" max="999" value="2"></div>
+        <div class="field"><label for="f-early-u">Unit</label>
+          <select id="f-early-u"><option value="1">minit sebelum</option><option value="60">jam sebelum</option><option value="1440" selected>hari sebelum</option><option value="10080">minggu sebelum</option></select></div>
+      </div>
+      <p class="hint" style="margin:-4px 0 14px">Notifikasi keluar pada masa peringatan (9:00 pagi kalau tiada masa) dan pada peringatan awal yang dipilih.</p>
     </div>
     <div class="field">
       <label for="f-note">Nota</label>
@@ -276,6 +298,18 @@ function dayDiff(iso){
   return Math.round((t - n) / 864e5);
 }
 function fmtDate(iso){ const [y,m,d] = iso.split("-").map(Number); return `${d} ${BULAN[m-1]} ${y}`; }
+function fmtTime(t){
+  if (!t) return "";
+  const [h, m] = t.split(":").map(Number);
+  return `${h % 12 || 12}:${String(m).padStart(2,"0")} ${h < 12 ? "pg" : h < 19 ? "ptg" : "mlm"}`;
+}
+function earlyLabel(min){
+  if (!min) return "";
+  if (min % 10080 === 0) return `${min/10080} minggu sebelum`;
+  if (min % 1440 === 0) return `${min/1440} hari sebelum`;
+  if (min % 60 === 0) return `${min/60} jam sebelum`;
+  return `${min} minit sebelum`;
+}
 function relDays(iso){
   const d = dayDiff(iso);
   if (d === 0) return {t:"Hari ini", c:"today"};
@@ -339,13 +373,13 @@ function remRow(i){
   const r = relDays(i.date);
   return `<li class="rem${i.done?" done":""}">
     <button type="button" class="check" data-act="done" data-id="${esc(i.id)}" aria-pressed="${!!i.done}" aria-label="Tanda selesai"><svg viewBox="0 0 12 12"><path d="M2.5 6.2l2.3 2.3 4.7-5" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
-    <div style="min-width:0"><div class="rem-title">${esc(i.title)}</div><div class="rem-sub">${fmtDate(i.date)}${i.note?` · ${esc(i.note.split("\n")[0]).slice(0,60)}`:""}</div></div>
+    <div style="min-width:0"><div class="rem-title">${esc(i.title)}</div><div class="rem-sub">${fmtDate(i.date)}${i.at_time?` · ${fmtTime(i.at_time)}`:""}${i.early_min?` · 🔔 ${earlyLabel(i.early_min)}`:""}${i.note?` · ${esc(i.note.split("\n")[0]).slice(0,60)}`:""}</div></div>
     <span class="days ${r.c}">${r.t}</span></li>`;
 }
 function itemRow(i){
   const c = CATS[i.cat] || CATS.idea, open = state.open === i.id, src = source(i.url);
   const meta = [];
-  if (i.cat === "ingat" && i.date){ const r = relDays(i.date); meta.push(`<span>${fmtDate(i.date)}</span><span class="days ${r.c}">${i.done?"Selesai":r.t}</span>`); }
+  if (i.cat === "ingat" && i.date){ const r = relDays(i.date); meta.push(`<span>${fmtDate(i.date)}${i.at_time?`, ${fmtTime(i.at_time)}`:""}</span>${i.early_min?`<span>🔔 ${earlyLabel(i.early_min)}</span>`:""}<span class="days ${r.c}">${i.done?"Selesai":r.t}</span>`); }
   if (src) meta.push(`<span class="src">${esc(src)} ↗</span>`);
   if (i.place) meta.push(`<span>${esc(i.place)}</span>`);
   if (i.price) meta.push(`<span>RM ${esc(i.price)}</span>`);
@@ -425,9 +459,9 @@ function setFormCat(k){
   $("#f-title-l").textContent = c.title; $("#f-title").placeholder = c.ph;
   $("#f-place-w").hidden = !(k === "makan" || k === "jalan");
   $("#f-price-w").hidden = k !== "beli";
-  $("#f-date-w").hidden = k !== "ingat";
+  $("#f-rem-w").hidden = k !== "ingat";
   $("#f-url-w").hidden = k === "ingat";
-  $("#f-extra").style.display = (k === "idea") ? "none" : "";
+  $("#f-extra").style.display = (k === "idea" || k === "ingat") ? "none" : "";
 }
 $("#seg").addEventListener("click", e => { const b = e.target.closest("[data-k]"); if (b) setFormCat(b.dataset.k); });
 function openSheet(it){
@@ -439,6 +473,8 @@ function openSheet(it){
   $("#f-url").value = it?.url || ""; $("#f-title").value = it?.title || "";
   $("#f-place").value = it?.place || ""; $("#f-price").value = it?.price || "";
   $("#f-date").value = it?.date || ""; $("#f-note").value = it?.note || "";
+  $("#f-time").value = it?.at_time || "";
+  setEarly(it ? it.early_min : 1440);
   $("#f-err").textContent = "";
   $("#scrim").hidden = false;
   setTimeout(() => (formCat === "ingat" || it ? $("#f-title") : $("#f-url")).focus(), 50);
@@ -452,6 +488,21 @@ $("#f-url").addEventListener("blur", () => {
   const v = $("#f-url").value.trim();
   if (v && !/^https?:\/\//i.test(v) && /\./.test(v)) $("#f-url").value = "https://" + v;
 });
+function setEarly(min){
+  const sel = $("#f-early"), preset = ["", "60", "1440", "10080"];
+  const v = min ? String(min) : "";
+  if (preset.includes(v)) { sel.value = v; $("#f-custom-w").hidden = true; return; }
+  sel.value = "custom"; $("#f-custom-w").hidden = false;
+  const u = [10080, 1440, 60, 1].find(u => min % u === 0);
+  $("#f-early-u").value = String(u); $("#f-early-n").value = String(min / u);
+}
+function readEarly(){
+  const v = $("#f-early").value;
+  if (v !== "custom") return v ? Number(v) : null;
+  const n = Math.round(Number($("#f-early-n").value));
+  return n > 0 ? n * Number($("#f-early-u").value) : null;
+}
+$("#f-early").addEventListener("change", () => { $("#f-custom-w").hidden = $("#f-early").value !== "custom"; });
 $("#form").addEventListener("submit", async e => {
   e.preventDefault();
   const k = formCat;
@@ -469,6 +520,8 @@ $("#form").addEventListener("submit", async e => {
     place: (k==="makan"||k==="jalan") ? $("#f-place").value.trim() : "",
     price: k==="beli" ? $("#f-price").value.trim().replace(/^rm\s*/i,"") : "",
     date: k==="ingat" ? date : "",
+    at_time: k==="ingat" && $("#f-time").value ? $("#f-time").value : null,
+    early_min: k==="ingat" ? readEarly() : null,
   };
   $("#f-save").disabled = true;
   try {
@@ -538,7 +591,7 @@ $("#notif-btn").addEventListener("click", async () => {
 });
 
 /* ---------- boot ---------- */
-const fromRow = r => ({...r, by: r.by_email, createdAt: Date.parse(r.created_at) || Date.now(), date: r.date || ""});
+const fromRow = r => ({...r, by: r.by_email, createdAt: Date.parse(r.created_at) || Date.now(), date: r.date || "", at_time: r.at_time || "", early_min: r.early_min || null});
 let loading = 0;
 async function load(){
   const my = ++loading;
