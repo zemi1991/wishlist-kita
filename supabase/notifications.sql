@@ -21,6 +21,14 @@ create table if not exists public.reminder_log (
 );
 alter table public.reminder_log enable row level security;
 
+-- Kunci notifikasi (dijana oleh fungsi; tiada polisi = hanya pelayan boleh akses)
+create table if not exists public.app_keys (
+  id int primary key,
+  public_key text not null,
+  private_key text not null
+);
+alter table public.app_keys enable row level security;
+
 create extension if not exists pg_cron;
 create extension if not exists pg_net;
 

@@ -485,6 +485,17 @@ $("#form").addEventListener("submit", async e => {
 });
 
 /* ---------- notifikasi ---------- */
+let _vapid = null;
+async function vapidKey(){
+  if (_vapid) return _vapid;
+  const cfg = window.WISHLIST_CONFIG || {};
+  if (cfg.vapidPublicKey) return (_vapid = cfg.vapidPublicKey);
+  try {
+    const r = await fetch(cfg.url + "/functions/v1/send-reminders?key=1", { headers: { apikey: cfg.anonKey, Authorization: "Bearer " + cfg.anonKey } });
+    if (!r.ok) return null;
+    return (_vapid = (await r.json()).publicKey || null);
+  } catch(_) { return null; }
+}
 function b64ToBytes(b64){ const p = "=".repeat((4 - b64.length % 4) % 4); const raw = atob((b64 + p).replace(/-/g,"+").replace(/_/g,"/")); return Uint8Array.from(raw, c => c.charCodeAt(0)); }
 function notifUI(mode){
   const box = $("#notif"), msg = $("#notif-msg"), btn = $("#notif-btn");
@@ -500,7 +511,7 @@ async function saveSub(sub){
   if (error) throw error;
 }
 async function checkNotif(){
-  const key = (window.WISHLIST_CONFIG || {}).vapidPublicKey;
+  const key = await vapidKey();
   if (!key) return;
   const ios = /iPhone|iPad|iPod/.test(navigator.userAgent);
   const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
@@ -519,7 +530,7 @@ $("#notif-btn").addEventListener("click", async () => {
     const perm = await Notification.requestPermission();
     if (perm !== "granted"){ notifUI(perm === "denied" ? "blocked" : "off"); return; }
     const reg = await navigator.serviceWorker.ready;
-    const sub = await reg.pushManager.getSubscription() || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(window.WISHLIST_CONFIG.vapidPublicKey) });
+    const sub = await reg.pushManager.getSubscription() || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(await vapidKey()) });
     await saveSub(sub);
     notifUI("on"); toast("Notifikasi dihidupkan");
   } catch(e) { toast("Tak dapat hidupkan notifikasi. Cuba lagi."); }
