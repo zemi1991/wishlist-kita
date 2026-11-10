@@ -552,6 +552,7 @@ async function vapidKey(){
 function b64ToBytes(b64){ const p = "=".repeat((4 - b64.length % 4) % 4); const raw = atob((b64 + p).replace(/-/g,"+").replace(/_/g,"/")); return Uint8Array.from(raw, c => c.charCodeAt(0)); }
 function notifUI(mode){
   const box = $("#notif"), msg = $("#notif-msg"), btn = $("#notif-btn");
+  if (mode === "on"){ box.hidden = true; return; }
   box.hidden = false; box.classList.toggle("on", mode === "on"); btn.hidden = mode !== "off";
   if (mode === "off") msg.textContent = "Dapatkan notifikasi sehari sebelum dan pada hari peringatan (9 pagi).";
   if (mode === "on") msg.textContent = "🔔 Notifikasi hidup di telefon ini: sehari sebelum & pada hari, 9 pagi.";
