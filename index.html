@@ -52,7 +52,24 @@ button{cursor:pointer}
 .brand{display:flex;align-items:center;gap:11px}
 .logo{width:40px;height:40px;border-radius:11px;flex:none;box-shadow:0 4px 12px rgba(30,60,100,.18)}
 .login .logo{width:48px;height:48px;border-radius:13px}
-.who{font-size:13px;color:var(--muted)}
+.who{font-size:14px;color:var(--fg);font-weight:600}
+.menu-btn{flex:none;width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--fg);display:grid;place-items:center;padding:0}
+.drawer-scrim{position:fixed;inset:0;z-index:32;background:rgba(15,20,30,.38);display:flex;justify-content:flex-end}
+.drawer{width:min(310px,84vw);height:100%;background:var(--bg);box-shadow:var(--shadow);display:flex;flex-direction:column;overflow-y:auto;padding-top:calc(env(safe-area-inset-top,0px) + 18px);padding-bottom:calc(env(safe-area-inset-bottom,0px) + 18px);padding-left:18px;padding-right:max(18px,env(safe-area-inset-right,0px))}
+@media (prefers-reduced-motion:no-preference){.drawer{animation:slide .2s ease-out}@keyframes slide{from{transform:translateX(40px);opacity:.5}to{transform:none;opacity:1}}}
+.drawer-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:22px}
+.brand.sm{font-size:19px;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:9px}
+.brand.sm .logo{width:32px;height:32px;border-radius:9px}
+.d-label{margin:4px 2px 8px}
+.d-list{list-style:none;margin:0 0 18px;padding:0;display:flex;flex-direction:column;gap:2px}
+.d-item{width:100%;display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:12px;border:0;background:transparent;font-size:15px;font-weight:600;text-align:left;color:var(--fg)}
+.d-item .n{margin-left:auto;color:var(--muted);font-weight:500;font-size:13.5px;font-variant-numeric:tabular-nums}
+.d-item[aria-current="true"]{background:var(--accent-soft);color:var(--accent-ink)}
+.d-item[aria-current="true"] .n{color:var(--accent-ink)}
+.d-item .ic{width:10px;height:10px;border-radius:50%;flex:none;background:var(--cc,var(--muted))}
+.d-item .ic.ring{background:transparent;border:2px solid var(--cc,var(--muted))}
+.d-add{border:1px dashed var(--faint);background:transparent;border-radius:12px;padding:11px 12px;font-weight:700;font-size:14.5px;color:var(--accent-ink);text-align:left}
+.drawer-foot{margin-top:auto;padding-top:20px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line)}
 .hero{margin-top:20px;background:var(--accent-soft);border-radius:20px;padding:20px 20px 22px}
 .hello{margin:0 0 6px;color:var(--accent-ink);font-size:14px;font-weight:600}
 .headline{margin:0;font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.3;text-wrap:balance}
@@ -192,7 +209,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 <div class="wrap" id="app" hidden>
   <header class="top">
     <h1 class="brand"><img class="logo" src="icon-192.png?v=2" alt="" width="40" height="40">Wishlist Kita</h1>
-    <span class="who"><span id="who"></span> <button class="out" id="logout" type="button">Keluar</button></span>
+    <button class="menu-btn" id="menu-btn" type="button" aria-label="Menu" aria-expanded="false"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
   </header>
   <div class="hero">
     <p class="hello" id="hello">Selamat datang</p>
@@ -216,7 +233,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
       <div class="chips" id="chips" role="group" aria-label="Kategori"></div>
       <div class="sub-tools">
         <span id="count"></span>
-        <button class="toggle" id="hide-done" type="button" aria-pressed="false">Sorok yang dah selesai</button>
+        <button class="toggle" id="status-btn" type="button">Semua status</button>
       </div>
     </div>
     <ul class="list" id="list"></ul>
@@ -277,6 +294,23 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
     </div>
   </form>
 </div>
+<div class="drawer-scrim" id="drawer-scrim" hidden>
+  <nav class="drawer" id="drawer" aria-label="Menu">
+    <div class="drawer-head">
+      <span class="brand sm"><img class="logo" src="icon-192.png?v=2" alt="" width="32" height="32">Wishlist Kita</span>
+      <button class="menu-btn" id="drawer-close" type="button" aria-label="Tutup menu"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+    </div>
+    <p class="label d-label">Status</p>
+    <ul class="d-list" id="d-status"></ul>
+    <p class="label d-label">Kategori</p>
+    <ul class="d-list" id="d-cats"></ul>
+    <button class="d-add" id="d-add" type="button">+ Tambah kategori</button>
+    <div class="drawer-foot">
+      <span class="who" id="who"></span>
+      <button class="out" id="logout" type="button">Keluar</button>
+    </div>
+  </nav>
+</div>
 <div class="scrim" id="cat-scrim" hidden>
   <form class="sheet" id="cat-form" novalidate>
     <div class="grab"></div>
@@ -306,7 +340,8 @@ const BUILTIN = {
   ingat:{label:"Ingat", tint:"--c-ingat", title:"Perlu ingat apa?", ph:"cth. Bayar cukai jalan"},
 };
 let CATS = {...BUILTIN}, customCats = [];
-const PALETTE = ["#E0A030","#2FA59A","#D65A8E","#7A6CE0","#5B8DEF","#8C7B6B","#E06A4E","#4E9A3F"];
+const PALETTE = ["#E0A030","#F2C230","#E06A4E","#E0457B","#D65A8E","#B05FD0","#7A6CE0","#5B8DEF",
+  "#2F9BD6","#2FB5C6","#2FA59A","#4E9A3F","#8DBA3A","#8C7B6B","#C08A5B","#6B7A8C"];
 const tintCss = c => c.tint.startsWith("--") ? `var(${c.tint})` : c.tint;
 const hasPlace = k => k === "makan" || k === "jalan" || CATS[k]?.extra === "place";
 const hasPrice = k => k === "beli" || CATS[k]?.extra === "price";
@@ -321,8 +356,9 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt
 const BULAN = ["Jan","Feb","Mac","Apr","Mei","Jun","Jul","Ogo","Sep","Okt","Nov","Dis"];
 
 let items = [], sb = null, myId = null, names = {}, canWrite = true, channel = null;
-let state = {cat:"semua", q:"", hideDone:false, open:null};
-try { state.hideDone = localStorage.getItem("sk-hide") === "1"; } catch(e) {}
+let state = {cat:"semua", q:"", status:"semua", open:null};
+try { const st = localStorage.getItem("sk-status"); if (st) state.status = st; else if (localStorage.getItem("sk-hide") === "1") state.status = "pending"; } catch(e) {}
+const STATUS = {semua:"Semua", pending:"Pending", done:"Completed"};
 
 /* ---------- helpers ---------- */
 function source(url){
@@ -395,12 +431,14 @@ function render(){
   for (const k in CATS) counts[k] = items.filter(i => i.cat === k).length;
   $("#chips").innerHTML = [["semua","Semua"], ...Object.entries(CATS).map(([k,v]) => [k, v.label])].map(([k,l]) =>
     `<button type="button" class="chip" data-cat="${k}" aria-pressed="${state.cat===k}">${k!=="semua"?`<span class="dot" style="--cc:${tintCss(CATS[k])}"></span>`:""}${esc(l)}<span class="n">${counts[k]}</span></button>`).join("") + (canWrite ? `<button type="button" class="chip new" id="chip-new">+ Kategori</button>` : "");
-  $("#hide-done").setAttribute("aria-pressed", state.hideDone);
+  $("#status-btn").textContent = state.status === "semua" ? "Semua status" : STATUS[state.status] + " ✕";
+  $("#status-btn").setAttribute("aria-pressed", state.status !== "semua");
+  if (!$("#drawer-scrim").hidden) renderDrawer();
 
   // list
   const q = state.q.trim().toLowerCase();
   let list = items.filter(i => (state.cat === "semua" || i.cat === state.cat)
-    && (!state.hideDone || !i.done)
+    && (state.status === "semua" || (state.status === "done") === !!i.done)
     && (!q || [i.title,i.note,i.place,i.price,source(i.url)].some(v => v && String(v).toLowerCase().includes(q))));
   list.sort((a,b) => {
     if (a.cat === "ingat" && b.cat === "ingat") return (a.done - b.done) || String(a.date||"").localeCompare(String(b.date||""));
@@ -487,7 +525,33 @@ document.addEventListener("click", async e => {
 });
 $("#chips").addEventListener("click", e => { if (e.target.closest("#chip-new")) { openCats(false); return; } const c = e.target.closest(".chip"); if (!c) return; state.cat = c.dataset.cat; state.open = null; render(); });
 $("#q").addEventListener("input", e => { state.q = e.target.value; render(); });
-$("#hide-done").addEventListener("click", () => { state.hideDone = !state.hideDone; try{localStorage.setItem("sk-hide", state.hideDone?"1":"0")}catch(e){} render(); });
+function setStatus(st){ state.status = st; try{ localStorage.setItem("sk-status", st); }catch(e){} render(); }
+$("#status-btn").addEventListener("click", () => { if (state.status !== "semua") setStatus("semua"); else openDrawer(); });
+
+/* ---------- menu tepi ---------- */
+function renderDrawer(){
+  const inCat = i => state.cat === "semua" || i.cat === state.cat;
+  const sc = {semua: items.filter(inCat).length, pending: items.filter(i => inCat(i) && !i.done).length, done: items.filter(i => inCat(i) && i.done).length};
+  $("#d-status").innerHTML = Object.entries(STATUS).map(([k,l]) =>
+    `<li><button type="button" class="d-item" data-status="${k}" aria-current="${state.status===k}"><span class="ic${k==="pending"?" ring":""}" style="--cc:${k==="done"?"var(--ok)":k==="pending"?"var(--accent)":"var(--muted)"}"></span>${l}<span class="n">${sc[k]}</span></button></li>`).join("");
+  const cc = {semua: items.length}; for (const k in CATS) cc[k] = items.filter(i => i.cat === k).length;
+  $("#d-cats").innerHTML = [["semua", {label:"Semua kategori"}], ...Object.entries(CATS)].map(([k,c]) =>
+    `<li><button type="button" class="d-item" data-dcat="${esc(k)}" aria-current="${state.cat===k}"><span class="ic" style="--cc:${k==="semua"?"var(--faint)":tintCss(c)}"></span>${esc(c.label)}<span class="n">${cc[k]}</span></button></li>`).join("");
+  $("#d-add").hidden = !canWrite;
+}
+function openDrawer(){ renderDrawer(); $("#drawer-scrim").hidden = false; $("#menu-btn").setAttribute("aria-expanded","true"); }
+function closeDrawer(){ $("#drawer-scrim").hidden = true; $("#menu-btn").setAttribute("aria-expanded","false"); }
+$("#menu-btn").addEventListener("click", openDrawer);
+$("#drawer-close").addEventListener("click", closeDrawer);
+$("#drawer-scrim").addEventListener("click", e => {
+  if (e.target.id === "drawer-scrim") { closeDrawer(); return; }
+  const st = e.target.closest("[data-status]");
+  if (st) { setStatus(st.dataset.status); closeDrawer(); $("#list-l").scrollIntoView({behavior:"smooth"}); return; }
+  const dc = e.target.closest("[data-dcat]");
+  if (dc) { state.cat = dc.dataset.dcat; state.open = null; render(); closeDrawer(); $("#list-l").scrollIntoView({behavior:"smooth"}); }
+});
+$("#d-add").addEventListener("click", () => { closeDrawer(); openCats(false); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#drawer-scrim").hidden) closeDrawer(); });
 $("#rem-all").addEventListener("click", () => { state.cat = "ingat"; state.open = null; render(); $("#list-l").scrollIntoView({behavior:"smooth"}); });
 
 /* ---------- sheet ---------- */
