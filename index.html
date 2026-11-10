@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Wishlist Kita</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Wishlist Kita">
+<meta name="theme-color" content="#F4F8FC" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#10151B" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+/* Layout: one calm phone-width column; hairline-separated rows, no stacked cards; one floating "Simpan" button. */
+:root{
+  --bg:#F4F8FC; --surface:#FFFFFF; --fg:#18202A; --muted:#6F7C8B; --faint:#AEB9C6;
+  --line:#E1EAF3; --accent:#3A87C9; --accent-soft:#E3F0FB; --accent-ink:#1F5F94; --on-accent:#FFFFFF; --ok:#3F8A63; --warn:#B7742A;
+  --c-makan:#D2703F; --c-beli:#3A87C9; --c-jalan:#3F8A63; --c-idea:#8A5BB0; --c-ingat:#C2577A;
+  --shadow:0 10px 30px rgba(30,60,100,.12); --card-shadow:0 1px 2px rgba(30,60,100,.05);
+  --font:"Manrope",ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#10151B; --surface:#18202A; --fg:#EEF3F8; --muted:#93A1B1; --faint:#55626F;
+  --line:#253140; --accent:#7DBBEB; --accent-soft:#1A2D40; --accent-ink:#A9D3F5; --on-accent:#0E2236; --ok:#6CC495; --warn:#E0A55E;
+  --c-makan:#E08A60; --c-beli:#7DBBEB; --c-jalan:#6CC495; --c-idea:#B48EDB; --c-ingat:#E07A9C;
+  --shadow:0 10px 30px rgba(0,0,0,.45); --card-shadow:none; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#10151B; --surface:#18202A; --fg:#EEF3F8; --muted:#93A1B1; --faint:#55626F;
+  --line:#253140; --accent:#7DBBEB; --accent-soft:#1A2D40; --accent-ink:#A9D3F5; --on-accent:#0E2236; --ok:#6CC495; --warn:#E0A55E;
+  --c-makan:#E08A60; --c-beli:#7DBBEB; --c-jalan:#6CC495; --c-idea:#B48EDB; --c-ingat:#E07A9C;
+  --shadow:0 10px 30px rgba(0,0,0,.45); --card-shadow:none; color-scheme:dark}
+
+*{box-sizing:border-box}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:8px}
+.wrap{max-width:600px;margin:0 auto;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px));padding-block:28px 120px}
+
+/* header */
+.top{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.brand{font-size:28px;font-weight:800;letter-spacing:-.03em;margin:0}
+.brand span{color:var(--accent)}
+.who{font-size:13px;color:var(--muted)}
+.hero{margin-top:20px;background:var(--accent-soft);border-radius:20px;padding:20px 20px 22px}
+.hello{margin:0 0 6px;color:var(--accent-ink);font-size:14px;font-weight:600}
+.headline{margin:0;font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.3;text-wrap:balance}
+.headline b{color:var(--accent-ink);font-weight:800}
+.note-bar{margin-top:14px;font-size:13px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+
+/* section labels */
+.label{font-size:11.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:0}
+.sec{margin-top:30px}
+.sec-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.link-btn{background:none;border:0;padding:4px 0;color:var(--accent);font-size:13px;font-weight:600}
+
+/* reminders strip */
+.rem-list{list-style:none;margin:0;padding:4px 16px;background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:var(--card-shadow)}
+.rem{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;padding:13px 0;border-bottom:1px solid var(--line)}
+.rem:last-child{border-bottom:0}
+.check{width:22px;height:22px;border-radius:50%;border:1.5px solid var(--faint);background:transparent;display:grid;place-items:center;padding:0}
+.check[aria-pressed="true"]{background:var(--ok);border-color:var(--ok)}
+.check svg{width:12px;height:12px;stroke:var(--surface);opacity:0}
+.check[aria-pressed="true"] svg{opacity:1}
+.rem-title{font-weight:600;min-width:0;overflow-wrap:anywhere}
+.rem-sub{font-size:13px;color:var(--muted)}
+.days{font-size:13px;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--muted)}
+.days.soon{color:var(--accent)}
+.days.late{color:var(--warn)}
+.days.today{color:var(--surface);background:var(--accent);padding:2px 9px;border-radius:99px}
+.rem.done .rem-title{color:var(--muted);text-decoration:line-through}
+.empty-mini{color:var(--muted);font-size:14px;padding:10px 0}
+
+/* filter + search */
+.tools{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);padding-block:12px 10px;margin-top:6px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.search{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:11px 14px;font-size:15px;outline:none}
+.search:focus{border-color:var(--accent)}
+.chips{display:flex;gap:6px;overflow-x:auto;margin-top:10px;padding-bottom:2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:transparent;border-radius:99px;padding:6px 13px;font-size:13.5px;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:6px}
+.chip .n{font-weight:500;color:var(--faint);font-variant-numeric:tabular-nums}
+.chip{background:var(--surface)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.chip[aria-pressed="true"] .n{color:var(--on-accent);opacity:.75}
+.sub-tools{display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:13px;color:var(--muted)}
+.toggle{background:none;border:0;padding:4px 0;color:var(--muted);font-size:13px;font-weight:600}
+.toggle[aria-pressed="true"]{color:var(--accent)}
+
+/* item rows */
+.list{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column;gap:10px}
+.item{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:0 16px;box-shadow:var(--card-shadow);transition:border-color .15s}
+.item.open{border-color:var(--accent)}
+.row{display:grid;grid-template-columns:1fr auto;gap:12px;padding:15px 0;width:100%;text-align:left;background:none;border:0}
+.row-main{min-width:0;display:flex;flex-direction:column;gap:4px}
+.cat{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--cc,var(--muted))}
+.title{font-size:16.5px;font-weight:700;letter-spacing:-.01em;line-height:1.35;overflow-wrap:anywhere}
+.item.done .title{color:var(--muted)}
+.desc{font-size:14px;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;overflow-wrap:anywhere}
+.item.open .desc{-webkit-line-clamp:unset;display:block;white-space:pre-wrap}
+.meta{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12.5px;color:var(--muted);margin-top:2px}
+.meta .src{font-weight:700;color:var(--fg)}
+.badge-done{color:var(--ok);font-weight:700}
+.star{background:none;border:0;padding:2px;align-self:start;line-height:0}
+.star svg{width:20px;height:20px;fill:none;stroke:var(--faint);stroke-width:1.6}
+.star[aria-pressed="true"] svg{fill:var(--accent);stroke:var(--accent)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;padding:12px 0 15px;border-top:1px solid var(--line)}
+.act{border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:8px 13px;font-size:13.5px;font-weight:600;text-decoration:none;color:var(--fg);display:inline-flex;align-items:center;gap:6px}
+.act.primary{background:var(--accent);color:var(--on-accent);border-color:var(--accent)}
+.act.danger{color:var(--warn)}
+.act.danger.armed{background:var(--warn);border-color:var(--warn);color:var(--surface)}
+
+.empty{background:var(--surface);border:1px dashed var(--faint);border-radius:18px;padding:36px 16px;text-align:center;color:var(--muted)}
+.empty h3{color:var(--fg);font-size:17px;margin:0 0 6px}
+.empty p{margin:0 auto;max-width:34ch;font-size:14px}
+
+/* FAB */
+.fab{position:fixed;right:max(18px,calc(env(safe-area-inset-right,0px) + 18px));bottom:calc(env(safe-area-inset-bottom,0px) + 20px);z-index:20;background:var(--accent);color:var(--on-accent);border:0;border-radius:99px;padding:14px 22px;font-weight:700;font-size:15px;box-shadow:var(--shadow);display:flex;align-items:center;gap:8px}
+@media (min-width:640px){.fab{right:calc(50% - 300px + 18px)}}
+
+/* sheet */
+.scrim{position:fixed;inset:0;background:rgba(15,10,12,.38);z-index:30;display:flex;align-items:flex-end;justify-content:center}
+.sheet{background:var(--bg);width:100%;max-width:600px;max-height:92vh;overflow:auto;border-radius:22px 22px 0 0;padding-left:max(20px,env(safe-area-inset-left,0px));padding-right:max(20px,env(safe-area-inset-right,0px));padding-block:10px calc(env(safe-area-inset-bottom,0px) + 22px);box-shadow:var(--shadow)}
+@media (min-width:640px){.scrim{align-items:center}.sheet{border-radius:22px}}
+.grab{width:38px;height:4px;border-radius:9px;background:var(--line);margin:4px auto 14px}
+.sheet h2{margin:0 0 16px;font-size:20px;font-weight:800;letter-spacing:-.02em}
+.seg{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:16px}
+.seg button{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 4px;font-size:12.5px;font-weight:700;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:5px}
+.seg button[aria-pressed="true"]{border-color:var(--cc);color:var(--fg);box-shadow:inset 0 0 0 1px var(--cc)}
+.field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+.field label{font-size:12.5px;font-weight:700;color:var(--muted)}
+.field input,.field textarea{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:11px 13px;font-size:15.5px;outline:none;width:100%}
+.field input:focus,.field textarea:focus{border-color:var(--accent)}
+.field textarea{min-height:84px;resize:vertical}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.hint{font-size:12.5px;color:var(--muted)}
+.err{color:var(--warn);font-size:13px;min-height:1em;margin:0 0 10px}
+.sheet-actions{display:flex;gap:10px}
+.sheet-actions button{flex:1;border-radius:12px;padding:13px;font-weight:700;font-size:15px;border:1px solid var(--line);background:var(--surface)}
+.sheet-actions .save{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+
+.login{max-width:420px;margin:0 auto;padding-left:max(22px,env(safe-area-inset-left,0px));padding-right:max(22px,env(safe-area-inset-right,0px));padding-block:12vh 40px}
+.login .brand{font-size:34px}
+.login p.lead{color:var(--muted);margin:8px 0 28px}
+.login .box{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:var(--card-shadow)}
+.login button.save{width:100%;border:0;border-radius:12px;padding:13px;font-weight:700;font-size:15px;background:var(--accent);color:var(--on-accent)}
+.out{background:none;border:0;padding:4px 0;color:var(--muted);font-size:13px;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 84px);background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:99px;font-size:13.5px;font-weight:600;z-index:40}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s ease-out}@keyframes up{from{transform:translateY(24px);opacity:.6}to{transform:none;opacity:1}}}
+</style>
+</head>
+<body>
+<main class="login" id="login" hidden>
+  <h1 class="brand">Wishlist<span>.</span>Kita</h1>
+  <p class="lead">Tempat kita simpan benda menarik dan tarikh penting.</p>
+  <form class="box" id="login-form">
+    <div class="field"><label for="l-email">Email</label><input id="l-email" type="email" autocomplete="username" required></div>
+    <div class="field"><label for="l-pass">Kata laluan</label><input id="l-pass" type="password" autocomplete="current-password" required></div>
+    <p class="err" id="l-err" role="alert"></p>
+    <button class="save" type="submit" id="l-btn">Masuk</button>
+  </form>
+</main>
+
+<div class="wrap" id="app" hidden>
+  <header class="top">
+    <h1 class="brand">Wishlist<span>.</span>Kita</h1>
+    <span class="who"><span id="who"></span> <button class="out" id="logout" type="button">Keluar</button></span>
+  </header>
+  <div class="hero">
+    <p class="hello" id="hello">Selamat datang</p>
+    <h2 class="headline" id="headline">Benda menarik yang kita jumpa, semua dalam satu tempat.</h2>
+  </div>
+  <div class="note-bar" id="status" hidden></div>
+
+  <section class="sec" aria-labelledby="rem-l">
+    <div class="sec-head">
+      <h3 class="label" id="rem-l">Peringatan akan datang</h3>
+      <button class="link-btn" id="rem-all" type="button">Lihat semua</button>
+    </div>
+    <ul class="rem-list" id="rem-list"></ul>
+  </section>
+
+  <section class="sec" aria-labelledby="list-l">
+    <h3 class="label" id="list-l">Simpanan</h3>
+    <div class="tools">
+      <input class="search" id="q" type="search" placeholder="Cari nama, kedai, nota…" autocomplete="off">
+      <div class="chips" id="chips" role="group" aria-label="Kategori"></div>
+      <div class="sub-tools">
+        <span id="count"></span>
+        <button class="toggle" id="hide-done" type="button" aria-pressed="false">Sorok yang dah selesai</button>
+      </div>
+    </div>
+    <ul class="list" id="list"></ul>
+  </section>
+</div>
+
+<button class="fab" id="fab" hidden type="button" aria-label="Simpan benda baru">
+  <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>Simpan
+</button>
+
+<div class="scrim" id="scrim" hidden>
+  <form class="sheet" id="form" novalidate>
+    <div class="grab"></div>
+    <h2 id="form-title">Simpan benda baru</h2>
+    <div class="seg" id="seg" role="group" aria-label="Kategori"></div>
+    <div class="field" id="f-url-w">
+      <label for="f-url">Pautan (Threads, IG, TikTok, Maps, Shopee…)</label>
+      <input id="f-url" type="url" inputmode="url" placeholder="Tampal pautan di sini">
+    </div>
+    <div class="field">
+      <label for="f-title" id="f-title-l">Nama</label>
+      <input id="f-title" type="text" maxlength="120" placeholder="cth. Nasi lemak daun pisang Kg Baru">
+    </div>
+    <div class="two" id="f-extra">
+      <div class="field" id="f-place-w"><label for="f-place">Lokasi</label><input id="f-place" type="text" maxlength="80" placeholder="cth. Shah Alam"></div>
+      <div class="field" id="f-price-w"><label for="f-price">Harga (RM)</label><input id="f-price" type="text" inputmode="decimal" maxlength="20" placeholder="cth. 89"></div>
+      <div class="field" id="f-date-w"><label for="f-date">Tarikh</label><input id="f-date" type="date"></div>
+    </div>
+    <div class="field">
+      <label for="f-note">Nota</label>
+      <textarea id="f-note" maxlength="1000" placeholder="Kenapa menarik? Menu wajib cuba, saiz, waktu buka…"></textarea>
+    </div>
+    <p class="err" id="f-err" role="alert"></p>
+    <div class="sheet-actions">
+      <button type="button" id="f-cancel">Batal</button>
+      <button type="submit" class="save" id="f-save">Simpan</button>
+    </div>
+  </form>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+const CATS = {
+  makan:{label:"Makan", tint:"--c-makan", title:"Nama tempat / makanan", ph:"cth. Nasi lemak daun pisang Kg Baru"},
+  beli: {label:"Beli",  tint:"--c-beli",  title:"Nama barang", ph:"cth. Rak kasut kayu lipat"},
+  jalan:{label:"Jalan", tint:"--c-jalan", title:"Nama tempat", ph:"cth. Air terjun Sg. Gabai"},
+  idea: {label:"Idea",  tint:"--c-idea",  title:"Idea", ph:"cth. Resepi ayam masak merah"},
+  ingat:{label:"Ingat", tint:"--c-ingat", title:"Perlu ingat apa?", ph:"cth. Bayar cukai jalan"},
+};
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const BULAN = ["Jan","Feb","Mac","Apr","Mei","Jun","Jul","Ogo","Sep","Okt","Nov","Dis"];
+
+let items = [], sb = null, myId = null, names = {}, canWrite = true, channel = null;
+let state = {cat:"semua", q:"", hideDone:false, open:null};
+try { state.hideDone = localStorage.getItem("sk-hide") === "1"; } catch(e) {}
+
+/* ---------- helpers ---------- */
+function source(url){
+  if(!url) return null;
+  let h; try { h = new URL(url).hostname.replace(/^www\./,""); } catch(e){ return null; }
+  const map = [["threads.","Threads"],["instagram.","Instagram"],["tiktok.","TikTok"],["facebook.","Facebook"],["fb.","Facebook"],["x.com","X"],["twitter.","X"],["youtube.","YouTube"],["youtu.be","YouTube"],["maps.app.goo.gl","Maps"],["goo.gl","Maps"],["google.","Maps"],["shopee.","Shopee"],["shp.ee","Shopee"],["lazada.","Lazada"],["waze.","Waze"]];
+  for (const [k,v] of map) if (h.includes(k)) return v;
+  return h;
+}
+function dayDiff(iso){
+  const [y,m,d] = iso.split("-").map(Number);
+  const t = new Date(y, m-1, d), n = new Date(); n.setHours(0,0,0,0);
+  return Math.round((t - n) / 864e5);
+}
+function fmtDate(iso){ const [y,m,d] = iso.split("-").map(Number); return `${d} ${BULAN[m-1]} ${y}`; }
+function relDays(iso){
+  const d = dayDiff(iso);
+  if (d === 0) return {t:"Hari ini", c:"today"};
+  if (d === 1) return {t:"Esok", c:"soon"};
+  if (d < 0) return {t:`Lewat ${-d} hari`, c:"late"};
+  return {t:`${d} hari lagi`, c: d <= 7 ? "soon" : ""};
+}
+function ago(ts){
+  const d = Math.floor((Date.now() - ts) / 864e5);
+  if (d <= 0) return "hari ini"; if (d === 1) return "semalam";
+  if (d < 30) return `${d} hari lepas`;
+  const dt = new Date(ts); return `${dt.getDate()} ${BULAN[dt.getMonth()]}`;
+}
+function who(id){ if (!id) return ""; if (id.toLowerCase() === (myId||"").toLowerCase()) return "Saya"; return names[id.toLowerCase()] || "Pasangan"; }
+function toast(msg){ const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 1800); }
+function status(msg){ const s = $("#status"); s.textContent = msg || ""; s.hidden = !msg; }
+
+/* ---------- greeting ---------- */
+(function(){
+  const h = new Date().getHours();
+  $("#hello").textContent = h < 12 ? "Selamat pagi, sayang" : h < 14 ? "Selamat tengah hari, sayang" : h < 19 ? "Selamat petang, sayang" : "Selamat malam, sayang";
+})();
+
+/* ---------- render ---------- */
+function render(){
+  const saved = items.filter(i => i.cat !== "ingat");
+  const rems = items.filter(i => i.cat === "ingat" && i.date);
+  const upcoming = rems.filter(i => !i.done).sort((a,b) => a.date.localeCompare(b.date));
+  const pending = saved.filter(i => !i.done).length;
+
+  $("#headline").innerHTML = items.length
+    ? `Ada <b>${saved.length}</b> benda kita simpan, <b>${pending}</b> belum cuba.`
+    : "Benda menarik yang kita jumpa, semua dalam satu tempat.";
+
+  // reminders strip
+  const top = upcoming.slice(0,3);
+  $("#rem-list").innerHTML = top.length ? top.map(remRow).join("") :
+    `<li class="empty-mini">Tiada peringatan. Tekan <b>Simpan</b> dan pilih <b>Ingat</b> untuk tambah tarikh penting.</li>`;
+  $("#rem-all").hidden = !rems.length;
+
+  // chips
+  const counts = {semua: items.length};
+  for (const k in CATS) counts[k] = items.filter(i => i.cat === k).length;
+  $("#chips").innerHTML = [["semua","Semua"], ...Object.entries(CATS).map(([k,v]) => [k, v.label])].map(([k,l]) =>
+    `<button type="button" class="chip" data-cat="${k}" aria-pressed="${state.cat===k}">${k!=="semua"?`<span class="dot" style="--cc:var(${CATS[k].tint})"></span>`:""}${l}<span class="n">${counts[k]}</span></button>`).join("");
+  $("#hide-done").setAttribute("aria-pressed", state.hideDone);
+
+  // list
+  const q = state.q.trim().toLowerCase();
+  let list = items.filter(i => (state.cat === "semua" || i.cat === state.cat)
+    && (!state.hideDone || !i.done)
+    && (!q || [i.title,i.note,i.place,i.price,source(i.url)].some(v => v && String(v).toLowerCase().includes(q))));
+  list.sort((a,b) => {
+    if (a.cat === "ingat" && b.cat === "ingat") return (a.done - b.done) || String(a.date||"").localeCompare(String(b.date||""));
+    return (b.fav?1:0) - (a.fav?1:0) || (b.createdAt||0) - (a.createdAt||0);
+  });
+  $("#count").textContent = list.length ? `${list.length} ${state.cat==="semua"?"item":CATS[state.cat].label.toLowerCase()}` : "";
+  $("#list").innerHTML = list.length ? list.map(itemRow).join("") : emptyState(q);
+}
+function remRow(i){
+  const r = relDays(i.date);
+  return `<li class="rem${i.done?" done":""}">
+    <button type="button" class="check" data-act="done" data-id="${esc(i.id)}" aria-pressed="${!!i.done}" aria-label="Tanda selesai"><svg viewBox="0 0 12 12"><path d="M2.5 6.2l2.3 2.3 4.7-5" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div style="min-width:0"><div class="rem-title">${esc(i.title)}</div><div class="rem-sub">${fmtDate(i.date)}${i.note?` · ${esc(i.note.split("\n")[0]).slice(0,60)}`:""}</div></div>
+    <span class="days ${r.c}">${r.t}</span></li>`;
+}
+function itemRow(i){
+  const c = CATS[i.cat] || CATS.idea, open = state.open === i.id, src = source(i.url);
+  const meta = [];
+  if (i.cat === "ingat" && i.date){ const r = relDays(i.date); meta.push(`<span>${fmtDate(i.date)}</span><span class="days ${r.c}">${i.done?"Selesai":r.t}</span>`); }
+  if (src) meta.push(`<span class="src">${esc(src)} ↗</span>`);
+  if (i.place) meta.push(`<span>${esc(i.place)}</span>`);
+  if (i.price) meta.push(`<span>RM ${esc(i.price)}</span>`);
+  if (i.done && i.cat !== "ingat") meta.push(`<span class="badge-done">${i.cat==="beli"?"Dah beli":i.cat==="makan"?"Dah makan":i.cat==="jalan"?"Dah pergi":"Dah buat"}</span>`);
+  meta.push(`<span>${esc([who(i.by), ago(i.createdAt||Date.now())].filter(Boolean).join(" · "))}</span>`);
+  const doneLbl = i.done ? "Tanda belum" : i.cat==="beli"?"Dah beli":i.cat==="makan"?"Dah makan":i.cat==="jalan"?"Dah pergi":"Tanda selesai";
+  return `<li class="item${open?" open":""}${i.done?" done":""}">
+    <div class="row">
+      <button type="button" class="row-main" data-act="open" data-id="${esc(i.id)}" aria-expanded="${open}" style="background:none;border:0;padding:0;text-align:left">
+        <span class="cat"><span class="dot" style="--cc:var(${c.tint})"></span>${c.label}</span>
+        <span class="title">${esc(i.title)}</span>
+        ${i.note?`<span class="desc">${esc(i.note)}</span>`:""}
+        <span class="meta">${meta.join("")}</span>
+      </button>
+      <button type="button" class="star" data-act="fav" data-id="${esc(i.id)}" aria-pressed="${!!i.fav}" aria-label="Kegemaran"><svg viewBox="0 0 24 24"><path d="M12 20.3s-7.5-4.6-9.2-9.3C1.6 7.6 3.9 4.5 7.2 4.5c2 0 3.6 1.1 4.8 2.8 1.2-1.7 2.8-2.8 4.8-2.8 3.3 0 5.6 3.1 4.4 6.5-1.7 4.7-9.2 9.3-9.2 9.3z" stroke-linejoin="round"/></svg></button>
+    </div>
+    ${open?`<div class="actions">
+      ${i.url?`<a class="act primary" href="${esc(i.url)}" target="_blank" rel="noopener noreferrer">Buka ${esc(src||"pautan")} ↗</a>`:""}
+      <button type="button" class="act" data-act="done" data-id="${esc(i.id)}">${doneLbl}</button>
+      <button type="button" class="act" data-act="edit" data-id="${esc(i.id)}">Ubah</button>
+      <button type="button" class="act danger" data-act="del" data-id="${esc(i.id)}">Padam</button>
+    </div>`:""}
+  </li>`;
+}
+function emptyState(q){
+  if (!items.length) return `<li class="empty"><h3>Belum ada apa-apa lagi</h3><p>Jumpa kedai makan atau barang best kat Threads? Salin pautan, tekan <b>Simpan</b>, dan tampal. Nanti senang cari balik.</p></li>`;
+  if (q) return `<li class="empty"><h3>Tiada padanan</h3><p>Tak jumpa apa-apa untuk "${esc(q)}". Cuba perkataan lain.</p></li>`;
+  return `<li class="empty"><h3>Kosong di sini</h3><p>Tiada item dalam kategori ini lagi.</p></li>`;
+}
+
+/* ---------- data writes ---------- */
+const byId = id => items.find(i => i.id === id);
+const toRow = body => { const r = {...body}; if ("date" in r) r.date = r.date || null; return r; };
+async function write(id, body, isNew){
+  const q = isNew ? sb.from("items").insert({id, ...toRow(body)}) : sb.from("items").update(toRow(body)).eq("id", id);
+  const { error } = await q;
+  if (error){
+    if (error.code === "42501") toast("Akaun ini tiada dalam senarai ahli.");
+    else toast("Tak dapat simpan. Semak internet dan cuba lagi.");
+    load(); throw error;
+  }
+  load();
+}
+async function remove(id){
+  items = items.filter(i => i.id !== id); render();
+  const { error } = await sb.from("items").delete().eq("id", id);
+  if (error){ toast("Tak dapat padam. Cuba lagi."); load(); } else toast("Dipadam");
+}
+
+/* ---------- events ---------- */
+let armed = null;
+document.addEventListener("click", async e => {
+  const b = e.target.closest("[data-act]"); if (!b) return;
+  const id = b.dataset.id, it = byId(id); if (!it) return;
+  const act = b.dataset.act;
+  if (act === "open"){ state.open = state.open === id ? null : id; armed = null; render(); return; }
+  if (act === "fav"){ it.fav = !it.fav; render(); write(id, {fav: it.fav}).catch(()=>{}); return; }
+  if (act === "done"){ it.done = !it.done; render(); write(id, {done: it.done}).catch(()=>{}); if (it.done) toast(it.cat==="ingat"?"Selesai":"Ditanda"); return; }
+  if (act === "edit"){ openSheet(it); return; }
+  if (act === "del"){
+    if (armed === id){ armed = null; state.open = null; remove(id); return; }
+    armed = id; b.textContent = "Tekan lagi untuk padam"; b.classList.add("armed");
+    setTimeout(() => { if (armed === id){ armed = null; b.textContent = "Padam"; b.classList.remove("armed"); } }, 3000);
+  }
+});
+$("#chips").addEventListener("click", e => { const c = e.target.closest(".chip"); if (!c) return; state.cat = c.dataset.cat; state.open = null; render(); });
+$("#q").addEventListener("input", e => { state.q = e.target.value; render(); });
+$("#hide-done").addEventListener("click", () => { state.hideDone = !state.hideDone; try{localStorage.setItem("sk-hide", state.hideDone?"1":"0")}catch(e){} render(); });
+$("#rem-all").addEventListener("click", () => { state.cat = "ingat"; state.open = null; render(); $("#list-l").scrollIntoView({behavior:"smooth"}); });
+
+/* ---------- sheet ---------- */
+let editing = null, formCat = "makan";
+function setFormCat(k){
+  formCat = k; const c = CATS[k];
+  $("#seg").innerHTML = Object.entries(CATS).map(([key,v]) =>
+    `<button type="button" data-k="${key}" aria-pressed="${key===k}" style="--cc:var(${v.tint})"><span class="dot"></span>${v.label}</button>`).join("");
+  $("#f-title-l").textContent = c.title; $("#f-title").placeholder = c.ph;
+  $("#f-place-w").hidden = !(k === "makan" || k === "jalan");
+  $("#f-price-w").hidden = k !== "beli";
+  $("#f-date-w").hidden = k !== "ingat";
+  $("#f-url-w").hidden = k === "ingat";
+  $("#f-extra").style.display = (k === "idea") ? "none" : "";
+}
+$("#seg").addEventListener("click", e => { const b = e.target.closest("[data-k]"); if (b) setFormCat(b.dataset.k); });
+function openSheet(it){
+  if (!canWrite){ toast("Akaun ini cuma boleh lihat."); return; }
+  editing = it || null;
+  $("#form-title").textContent = it ? "Ubah simpanan" : "Simpan benda baru";
+  $("#f-save").textContent = it ? "Simpan perubahan" : "Simpan";
+  setFormCat(it ? it.cat : (state.cat !== "semua" ? state.cat : "makan"));
+  $("#f-url").value = it?.url || ""; $("#f-title").value = it?.title || "";
+  $("#f-place").value = it?.place || ""; $("#f-price").value = it?.price || "";
+  $("#f-date").value = it?.date || ""; $("#f-note").value = it?.note || "";
+  $("#f-err").textContent = "";
+  $("#scrim").hidden = false;
+  setTimeout(() => (formCat === "ingat" || it ? $("#f-title") : $("#f-url")).focus(), 50);
+}
+function closeSheet(){ $("#scrim").hidden = true; editing = null; }
+$("#fab").addEventListener("click", () => openSheet());
+$("#f-cancel").addEventListener("click", closeSheet);
+$("#scrim").addEventListener("click", e => { if (e.target.id === "scrim") closeSheet(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#scrim").hidden) closeSheet(); });
+$("#f-url").addEventListener("blur", () => {
+  const v = $("#f-url").value.trim();
+  if (v && !/^https?:\/\//i.test(v) && /\./.test(v)) $("#f-url").value = "https://" + v;
+});
+$("#form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const k = formCat;
+  let url = k === "ingat" ? "" : $("#f-url").value.trim();
+  if (url && !/^https?:\/\//i.test(url)) url = "https://" + url;
+  if (url){ try { new URL(url); } catch(_) { $("#f-err").textContent = "Pautan tak sah. Tampal pautan penuh dari aplikasi."; return; } }
+  let title = $("#f-title").value.trim();
+  if (!title && url) title = (source(url) || "Pautan") + " yang disimpan";
+  if (!title){ $("#f-err").textContent = "Tulis nama dulu."; $("#f-title").focus(); return; }
+  const date = $("#f-date").value;
+  if (k === "ingat" && !date){ $("#f-err").textContent = "Pilih tarikh untuk peringatan."; $("#f-date").focus(); return; }
+  const body = {
+    cat:k, title, url,
+    note: $("#f-note").value.trim(),
+    place: (k==="makan"||k==="jalan") ? $("#f-place").value.trim() : "",
+    price: k==="beli" ? $("#f-price").value.trim().replace(/^rm\s*/i,"") : "",
+    date: k==="ingat" ? date : "",
+  };
+  $("#f-save").disabled = true;
+  try {
+    if (editing){ await write(editing.id, body, false); toast("Dikemas kini"); }
+    else {
+      const id = (crypto.randomUUID ? crypto.randomUUID() : "10000000-1000-4000-8000-100000000000".replace(/[018]/g, c => (c ^ Math.random() * 16 >> c / 4).toString(16)));
+      items.push({id, ...body, done:false, fav:false, by: myId, createdAt: Date.now()}); render();
+      await write(id, {...body, done:false, fav:false}, true);
+      toast("Disimpan");
+      if (state.cat !== "semua" && state.cat !== k) state.cat = k;
+    }
+    closeSheet();
+  } catch(_) {} finally { $("#f-save").disabled = false; }
+});
+
+/* ---------- boot ---------- */
+const fromRow = r => ({...r, by: r.by_email, createdAt: Date.parse(r.created_at) || Date.now(), date: r.date || ""});
+let loading = 0;
+async function load(){
+  const my = ++loading;
+  const { data, error } = await sb.from("items").select("*").order("created_at", {ascending:false});
+  if (my !== loading) return;
+  if (error){ status("Tak dapat muatkan simpanan. Semak internet."); return; }
+  status(""); items = data.map(fromRow); render();
+}
+async function loadNames(){
+  const { data } = await sb.from("members").select("email,name");
+  if (!data) return;
+  if (!data.length){ status("Email ini tiada dalam senarai ahli. Tambah dalam jadual members di Supabase."); canWrite = false; $("#fab").hidden = true; }
+  for (const m of data) names[m.email.toLowerCase()] = m.name;
+  const me = names[(myId||"").toLowerCase()]; $("#who").textContent = me || "";
+  render();
+}
+function showLogin(){ $("#app").hidden = true; $("#fab").hidden = true; $("#login").hidden = false; }
+async function showApp(session){
+  myId = session.user.email;
+  $("#login").hidden = true; $("#app").hidden = false; $("#fab").hidden = !canWrite;
+  render(); status("Memuatkan simpanan…");
+  await Promise.all([load(), loadNames()]);
+  if (!channel){
+    channel = sb.channel("items-live")
+      .on("postgres_changes", {event:"*", schema:"public", table:"items"}, () => load())
+      .subscribe();
+  }
+}
+$("#login-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  $("#l-err").textContent = ""; $("#l-btn").disabled = true;
+  const { error } = await sb.auth.signInWithPassword({ email: $("#l-email").value.trim(), password: $("#l-pass").value });
+  $("#l-btn").disabled = false;
+  if (error) $("#l-err").textContent = "Email atau kata laluan salah.";
+});
+$("#logout").addEventListener("click", async () => { await sb.auth.signOut(); });
+document.addEventListener("visibilitychange", () => { if (!document.hidden && myId) load(); });
+
+(function boot(){
+  const cfg = window.WISHLIST_CONFIG || {};
+  if (!window.supabase || !cfg.url || cfg.url.includes("ISI_")){
+    $("#app").hidden = false; status("Belum disambung ke Supabase. Isi config.js dengan Project URL dan anon key.");
+    canWrite = false; $("#logout").hidden = true; render(); return;
+  }
+  sb = supabase.createClient(cfg.url, cfg.anonKey, { auth: { persistSession: true, autoRefreshToken: true } });
+  sb.auth.onAuthStateChange((_ev, session) => {
+    if (session) { if (myId !== session.user.email) showApp(session); }
+    else { myId = null; items = []; if (channel){ sb.removeChannel(channel); channel = null; } showLogin(); }
+  });
+  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+})();
+</script>
+</body>
+</html>
