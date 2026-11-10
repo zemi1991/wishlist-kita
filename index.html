@@ -535,7 +535,7 @@ function renderDrawer(){
   $("#d-status").innerHTML = Object.entries(STATUS).map(([k,l]) =>
     `<li><button type="button" class="d-item" data-status="${k}" aria-current="${state.status===k}"><span class="ic${k==="pending"?" ring":""}" style="--cc:${k==="done"?"var(--ok)":k==="pending"?"var(--accent)":"var(--muted)"}"></span>${l}<span class="n">${sc[k]}</span></button></li>`).join("");
   const cc = {semua: items.length}; for (const k in CATS) cc[k] = items.filter(i => i.cat === k).length;
-  $("#d-cats").innerHTML = [["semua", {label:"Semua kategori"}], ...Object.entries(CATS)].map(([k,c]) =>
+  $("#d-cats").innerHTML = [["semua", {label:"Semua kategori"}], ...Object.entries(CATS).sort((x, y) => cc[y[0]] - cc[x[0]])].map(([k,c]) =>
     `<li><button type="button" class="d-item" data-dcat="${esc(k)}" aria-current="${state.cat===k}"><span class="ic" style="--cc:${k==="semua"?"var(--faint)":tintCss(c)}"></span>${esc(c.label)}<span class="n">${cc[k]}</span></button></li>`).join("");
   $("#d-add").hidden = !canWrite;
 }
