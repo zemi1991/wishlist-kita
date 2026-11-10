@@ -47,9 +47,11 @@ button{cursor:pointer}
 .wrap{max-width:600px;margin:0 auto;padding-left:max(18px,env(safe-area-inset-left,0px));padding-right:max(18px,env(safe-area-inset-right,0px));padding-block:28px 120px}
 
 /* header */
-.top{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .brand{font-size:28px;font-weight:800;letter-spacing:-.03em;margin:0}
-.brand span{color:var(--accent)}
+.brand{display:flex;align-items:center;gap:11px}
+.logo{width:40px;height:40px;border-radius:11px;flex:none;box-shadow:0 4px 12px rgba(30,60,100,.18)}
+.login .logo{width:48px;height:48px;border-radius:13px}
 .who{font-size:13px;color:var(--muted)}
 .hero{margin-top:20px;background:var(--accent-soft);border-radius:20px;padding:20px 20px 22px}
 .hello{margin:0 0 6px;color:var(--accent-ink);font-size:14px;font-weight:600}
@@ -166,7 +168,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 </head>
 <body>
 <main class="login" id="login" hidden>
-  <h1 class="brand">Wishlist<span>.</span>Kita</h1>
+  <h1 class="brand"><img class="logo" src="icon-192.png?v=2" alt="" width="40" height="40">Wishlist Kita</h1>
   <p class="lead">Tempat kita simpan benda menarik dan tarikh penting.</p>
   <form class="box" id="login-form">
     <div class="field"><label for="l-email">Email</label><input id="l-email" type="email" autocomplete="username" required></div>
@@ -178,7 +180,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 
 <div class="wrap" id="app" hidden>
   <header class="top">
-    <h1 class="brand">Wishlist<span>.</span>Kita</h1>
+    <h1 class="brand"><img class="logo" src="icon-192.png?v=2" alt="" width="40" height="40">Wishlist Kita</h1>
     <span class="who"><span id="who"></span> <button class="out" id="logout" type="button">Keluar</button></span>
   </header>
   <div class="hero">
