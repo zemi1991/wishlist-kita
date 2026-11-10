@@ -140,7 +140,9 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 @media (min-width:640px){.scrim{align-items:center}.sheet{border-radius:22px}}
 .grab{width:38px;height:4px;border-radius:9px;background:var(--line);margin:4px auto 14px}
 .sheet h2{margin:0 0 16px;font-size:20px;font-weight:800;letter-spacing:-.02em}
-.seg{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-bottom:16px}
+.seg{display:grid;grid-template-columns:repeat(auto-fill,minmax(64px,1fr));gap:6px;margin-bottom:16px}
+.seg button.new,.chip.new{border-style:dashed;color:var(--accent-ink)}
+.seg button span.plus{font-size:15px;line-height:7px;height:7px}
 .seg button{border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 4px;font-size:12.5px;font-weight:700;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:5px}
 .seg button[aria-pressed="true"]{border-color:var(--cc);color:var(--fg);box-shadow:inset 0 0 0 1px var(--cc)}
 .field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
@@ -162,6 +164,15 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .login .box{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:var(--card-shadow)}
 .login button.save{width:100%;border:0;border-radius:12px;padding:13px;font-weight:700;font-size:15px;background:var(--accent);color:var(--on-accent)}
 .out{background:none;border:0;padding:4px 0;color:var(--muted);font-size:13px;font-weight:600;text-decoration:underline;text-underline-offset:3px}
+#cat-scrim{z-index:35}
+.swatches{display:flex;flex-wrap:wrap;gap:9px}
+.swatch{width:32px;height:32px;border-radius:50%;border:3px solid var(--bg);background:var(--sw);box-shadow:0 0 0 1px var(--line);padding:0}
+.swatch[aria-pressed="true"]{box-shadow:0 0 0 2px var(--fg)}
+.cat-list{list-style:none;margin:0 0 18px;padding:0;display:flex;flex-direction:column;gap:8px}
+.cat-row{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
+.cat-row .nm{flex:1;min-width:0;font-weight:700;overflow-wrap:anywhere}
+.cat-row .nm small{display:block;font-weight:500;color:var(--muted);font-size:12.5px}
+.cat-row .act{padding:6px 10px;font-size:12.5px}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 84px);background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:99px;font-size:13.5px;font-weight:600;z-index:40}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:up .22s ease-out}@keyframes up{from{transform:translateY(24px);opacity:.6}to{transform:none;opacity:1}}}
 </style>
@@ -266,18 +277,45 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
     </div>
   </form>
 </div>
+<div class="scrim" id="cat-scrim" hidden>
+  <form class="sheet" id="cat-form" novalidate>
+    <div class="grab"></div>
+    <h2>Kategori sendiri</h2>
+    <ul class="cat-list" id="cat-list"></ul>
+    <div class="field"><label for="c-name">Nama kategori baru</label><input id="c-name" type="text" maxlength="20" placeholder="cth. Tips, Foodies, Hadiah"></div>
+    <div class="field"><label>Warna</label><div class="swatches" id="c-colors"></div></div>
+    <div class="field"><label for="c-extra">Medan tambahan</label>
+      <select id="c-extra"><option value="">Tiada (pautan + nota sahaja)</option><option value="place">Lokasi</option><option value="price">Harga (RM)</option></select></div>
+    <p class="err" id="c-err" role="alert"></p>
+    <div class="sheet-actions">
+      <button type="button" id="c-close">Tutup</button>
+      <button type="submit" class="save" id="c-save">Tambah kategori</button>
+    </div>
+  </form>
+</div>
 <div class="toast" id="toast" hidden></div>
 
 <script src="config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
-const CATS = {
+const BUILTIN = {
   makan:{label:"Makan", tint:"--c-makan", title:"Nama tempat / makanan", ph:"cth. Nasi lemak daun pisang Kg Baru"},
   beli: {label:"Beli",  tint:"--c-beli",  title:"Nama barang", ph:"cth. Rak kasut kayu lipat"},
   jalan:{label:"Jalan", tint:"--c-jalan", title:"Nama tempat", ph:"cth. Air terjun Sg. Gabai"},
   idea: {label:"Idea",  tint:"--c-idea",  title:"Idea", ph:"cth. Resepi ayam masak merah"},
   ingat:{label:"Ingat", tint:"--c-ingat", title:"Perlu ingat apa?", ph:"cth. Bayar cukai jalan"},
 };
+let CATS = {...BUILTIN}, customCats = [];
+const PALETTE = ["#E0A030","#2FA59A","#D65A8E","#7A6CE0","#5B8DEF","#8C7B6B","#E06A4E","#4E9A3F"];
+const tintCss = c => c.tint.startsWith("--") ? `var(${c.tint})` : c.tint;
+const hasPlace = k => k === "makan" || k === "jalan" || CATS[k]?.extra === "place";
+const hasPrice = k => k === "beli" || CATS[k]?.extra === "price";
+function setCats(rows){
+  customCats = rows;
+  CATS = {...BUILTIN};
+  for (const c of rows) CATS[c.id] = {label:c.label, tint:c.color, title:"Nama", ph:"cth. " + c.label + " yang menarik", extra:c.extra || ""};
+  if (state.cat !== "semua" && !CATS[state.cat]) state.cat = "semua";
+}
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const BULAN = ["Jan","Feb","Mac","Apr","Mei","Jun","Jul","Ogo","Sep","Okt","Nov","Dis"];
@@ -356,7 +394,7 @@ function render(){
   const counts = {semua: items.length};
   for (const k in CATS) counts[k] = items.filter(i => i.cat === k).length;
   $("#chips").innerHTML = [["semua","Semua"], ...Object.entries(CATS).map(([k,v]) => [k, v.label])].map(([k,l]) =>
-    `<button type="button" class="chip" data-cat="${k}" aria-pressed="${state.cat===k}">${k!=="semua"?`<span class="dot" style="--cc:var(${CATS[k].tint})"></span>`:""}${l}<span class="n">${counts[k]}</span></button>`).join("");
+    `<button type="button" class="chip" data-cat="${k}" aria-pressed="${state.cat===k}">${k!=="semua"?`<span class="dot" style="--cc:${tintCss(CATS[k])}"></span>`:""}${esc(l)}<span class="n">${counts[k]}</span></button>`).join("") + (canWrite ? `<button type="button" class="chip new" id="chip-new">+ Kategori</button>` : "");
   $("#hide-done").setAttribute("aria-pressed", state.hideDone);
 
   // list
@@ -368,7 +406,7 @@ function render(){
     if (a.cat === "ingat" && b.cat === "ingat") return (a.done - b.done) || String(a.date||"").localeCompare(String(b.date||""));
     return (b.fav?1:0) - (a.fav?1:0) || (b.createdAt||0) - (a.createdAt||0);
   });
-  $("#count").textContent = list.length ? `${list.length} ${state.cat==="semua"?"item":CATS[state.cat].label.toLowerCase()}` : "";
+  $("#count").textContent = list.length ? `${list.length} ${state.cat==="semua"?"item":(CATS[state.cat]?.label || "item").toLowerCase()}` : "";
   $("#list").innerHTML = list.length ? list.map(itemRow).join("") : emptyState(q);
 }
 function remRow(i){
@@ -391,7 +429,7 @@ function itemRow(i){
   return `<li class="item${open?" open":""}${i.done?" done":""}">
     <div class="row">
       <button type="button" class="row-main" data-act="open" data-id="${esc(i.id)}" aria-expanded="${open}" style="background:none;border:0;padding:0;text-align:left">
-        <span class="cat"><span class="dot" style="--cc:var(${c.tint})"></span>${c.label}</span>
+        <span class="cat"><span class="dot" style="--cc:${tintCss(c)}"></span>${esc(c.label)}</span>
         <span class="title">${esc(i.title)}</span>
         ${i.note?`<span class="desc">${esc(i.note)}</span>`:""}
         <span class="meta">${meta.join("")}</span>
@@ -447,7 +485,7 @@ document.addEventListener("click", async e => {
     setTimeout(() => { if (armed === id){ armed = null; b.textContent = "Padam"; b.classList.remove("armed"); } }, 3000);
   }
 });
-$("#chips").addEventListener("click", e => { const c = e.target.closest(".chip"); if (!c) return; state.cat = c.dataset.cat; state.open = null; render(); });
+$("#chips").addEventListener("click", e => { if (e.target.closest("#chip-new")) { openCats(false); return; } const c = e.target.closest(".chip"); if (!c) return; state.cat = c.dataset.cat; state.open = null; render(); });
 $("#q").addEventListener("input", e => { state.q = e.target.value; render(); });
 $("#hide-done").addEventListener("click", () => { state.hideDone = !state.hideDone; try{localStorage.setItem("sk-hide", state.hideDone?"1":"0")}catch(e){} render(); });
 $("#rem-all").addEventListener("click", () => { state.cat = "ingat"; state.open = null; render(); $("#list-l").scrollIntoView({behavior:"smooth"}); });
@@ -455,17 +493,22 @@ $("#rem-all").addEventListener("click", () => { state.cat = "ingat"; state.open 
 /* ---------- sheet ---------- */
 let editing = null, formCat = "makan";
 function setFormCat(k){
+  if (!CATS[k]) k = "idea";
   formCat = k; const c = CATS[k];
   $("#seg").innerHTML = Object.entries(CATS).map(([key,v]) =>
-    `<button type="button" data-k="${key}" aria-pressed="${key===k}" style="--cc:var(${v.tint})"><span class="dot"></span>${v.label}</button>`).join("");
+    `<button type="button" data-k="${key}" aria-pressed="${key===k}" style="--cc:${tintCss(v)}"><span class="dot"></span>${esc(v.label)}</button>`).join("")
+    + `<button type="button" class="new" data-new="1"><span class="plus">+</span>Baru</button>`;
   $("#f-title-l").textContent = c.title; $("#f-title").placeholder = c.ph;
-  $("#f-place-w").hidden = !(k === "makan" || k === "jalan");
-  $("#f-price-w").hidden = k !== "beli";
+  $("#f-place-w").hidden = !hasPlace(k);
+  $("#f-price-w").hidden = !hasPrice(k);
   $("#f-rem-w").hidden = k !== "ingat";
   $("#f-url-w").hidden = k === "ingat";
-  $("#f-extra").style.display = (k === "idea" || k === "ingat") ? "none" : "";
+  $("#f-extra").style.display = (hasPlace(k) || hasPrice(k)) ? "" : "none";
 }
-$("#seg").addEventListener("click", e => { const b = e.target.closest("[data-k]"); if (b) setFormCat(b.dataset.k); });
+$("#seg").addEventListener("click", e => {
+  if (e.target.closest("[data-new]")) { openCats(true); return; }
+  const b = e.target.closest("[data-k]"); if (b) setFormCat(b.dataset.k);
+});
 function openSheet(it){
   if (!canWrite){ toast("Akaun ini cuma boleh lihat."); return; }
   editing = it || null;
@@ -519,8 +562,8 @@ $("#form").addEventListener("submit", async e => {
   const body = {
     cat:k, title, url,
     note: $("#f-note").value.trim(),
-    place: (k==="makan"||k==="jalan") ? $("#f-place").value.trim() : "",
-    price: k==="beli" ? $("#f-price").value.trim().replace(/^rm\s*/i,"") : "",
+    place: hasPlace(k) ? $("#f-place").value.trim() : "",
+    price: hasPrice(k) ? $("#f-price").value.trim().replace(/^rm\s*/i,"") : "",
     date: k==="ingat" ? date : "",
     at_time: k==="ingat" && $("#f-time").value ? $("#f-time").value : null,
     early_min: k==="ingat" ? readEarly() : null,
@@ -538,6 +581,64 @@ $("#form").addEventListener("submit", async e => {
     closeSheet();
   } catch(_) {} finally { $("#f-save").disabled = false; }
 });
+
+/* ---------- kategori sendiri ---------- */
+let catColor = PALETTE[0], catFromForm = false, catArmed = null;
+function renderCatSheet(){
+  const counts = {}; for (const i of items) counts[i.cat] = (counts[i.cat] || 0) + 1;
+  $("#cat-list").innerHTML = customCats.length ? customCats.map(c => `<li class="cat-row">
+      <span class="dot" style="--cc:${esc(c.color)};width:10px;height:10px"></span>
+      <span class="nm">${esc(c.label)}<small>${counts[c.id] || 0} item${c.extra === "place" ? " · ada lokasi" : c.extra === "price" ? " · ada harga" : ""}</small></span>
+      <button type="button" class="act danger${catArmed === c.id ? " armed" : ""}" data-del-cat="${esc(c.id)}">${catArmed === c.id ? "Pasti padam?" : "Padam"}</button></li>`).join("")
+    : `<li class="empty-mini">Belum ada kategori sendiri. Tambah satu di bawah.</li>`;
+  $("#c-colors").innerHTML = PALETTE.map(c => `<button type="button" class="swatch" style="--sw:${c}" data-color="${c}" aria-pressed="${c === catColor}" aria-label="Warna"></button>`).join("");
+}
+function openCats(fromForm){
+  if (!canWrite) { toast("Akaun ini cuma boleh lihat."); return; }
+  catFromForm = fromForm; catArmed = null;
+  catColor = PALETTE[customCats.length % PALETTE.length];
+  $("#c-name").value = ""; $("#c-extra").value = ""; $("#c-err").textContent = "";
+  renderCatSheet(); $("#cat-scrim").hidden = false;
+  setTimeout(() => $("#c-name").focus(), 50);
+}
+function closeCats(){ $("#cat-scrim").hidden = true; }
+$("#c-close").addEventListener("click", closeCats);
+$("#cat-scrim").addEventListener("click", async e => {
+  if (e.target.id === "cat-scrim") { closeCats(); return; }
+  const sw = e.target.closest("[data-color]");
+  if (sw) { catColor = sw.dataset.color; renderCatSheet(); return; }
+  const del = e.target.closest("[data-del-cat]");
+  if (!del) return;
+  const id = del.dataset.delCat;
+  if (catArmed !== id) { catArmed = id; renderCatSheet(); return; }
+  catArmed = null;
+  const moved = await sb.from("items").update({ cat: "idea" }).eq("cat", id);
+  const { error } = moved.error ? moved : await sb.from("categories").delete().eq("id", id);
+  if (error) { toast("Tak dapat padam kategori. Cuba lagi."); return; }
+  toast("Kategori dipadam. Item dipindah ke Idea.");
+  await Promise.all([loadCats(), load()]); renderCatSheet();
+});
+$("#cat-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const label = $("#c-name").value.trim().replace(/\s+/g, " ");
+  if (!label) { $("#c-err").textContent = "Tulis nama kategori dulu."; $("#c-name").focus(); return; }
+  if (Object.values(CATS).some(c => c.label.toLowerCase() === label.toLowerCase())) { $("#c-err").textContent = "Kategori ini dah ada."; return; }
+  const id = "c-" + Math.random().toString(36).slice(2, 8);
+  $("#c-save").disabled = true;
+  const { error } = await sb.from("categories").insert({ id, label, color: catColor, extra: $("#c-extra").value || null });
+  $("#c-save").disabled = false;
+  if (error) { $("#c-err").textContent = "Tak dapat simpan. Cuba lagi."; return; }
+  await loadCats();
+  toast(`Kategori ${label} ditambah`);
+  closeCats();
+  if (catFromForm && !$("#scrim").hidden) setFormCat(id);
+});
+async function loadCats(){
+  const { data, error } = await sb.from("categories").select("id,label,color,extra").order("created_at");
+  if (error || !data) return;
+  setCats(data); render();
+  if (!$("#scrim").hidden) setFormCat(formCat);
+}
 
 /* ---------- notifikasi ---------- */
 let _vapid = null;
@@ -616,11 +717,12 @@ async function showApp(session){
   myId = session.user.email;
   $("#login").hidden = true; $("#app").hidden = false; $("#fab").hidden = !canWrite;
   render(); status("Memuatkan simpanan…");
-  await Promise.all([load(), loadNames()]);
+  await Promise.all([load(), loadNames(), loadCats()]);
   checkNotif();
   if (!channel){
     channel = sb.channel("items-live")
       .on("postgres_changes", {event:"*", schema:"public", table:"items"}, () => load())
+      .on("postgres_changes", {event:"*", schema:"public", table:"categories"}, () => loadCats())
       .subscribe();
   }
 }
