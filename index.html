@@ -72,6 +72,15 @@ button{cursor:pointer}
 .drawer-foot{margin-top:auto;padding-top:20px;display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line)}
 .hero{margin-top:20px;background:var(--accent-soft);border-radius:20px;padding:20px 20px 22px}
 .hello{margin:0 0 6px;color:var(--accent-ink);font-size:14px;font-weight:600}
+.hello-top{margin:18px 2px 12px}
+.tiles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:13px 13px 12px;display:flex;flex-direction:column;gap:12px;text-align:left;min-width:0;box-shadow:var(--card-shadow);color:var(--fg)}
+.tile .r1{display:flex;justify-content:space-between;align-items:flex-start;gap:6px}
+.tile svg{width:30px;height:30px;flex:none}
+.tile .tn{font-size:23px;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+.tile .tl{font-size:13.5px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile[aria-pressed="true"]{border-color:var(--accent);box-shadow:inset 0 0 0 1.5px var(--accent)}
+.tile[aria-pressed="true"] .tl{color:var(--accent-ink)}
 .headline{margin:0;font-size:22px;font-weight:700;letter-spacing:-.02em;line-height:1.3;text-wrap:balance}
 .headline b{color:var(--accent-ink);font-weight:800}
 .note-bar{margin-top:14px;font-size:13px;color:var(--muted);background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
@@ -228,6 +237,8 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
   .toast{background:color-mix(in srgb,var(--fg) 82%,transparent)}
   .notif{background:color-mix(in srgb,var(--accent-soft) 75%,transparent);border:1px solid var(--glass-line)}
   .rem-list,.item,.empty{box-shadow:var(--glass-shadow)}
+  .tile{background:var(--glass-strong);border-color:var(--glass-line);box-shadow:var(--glass-shadow);-webkit-backdrop-filter:blur(18px) saturate(170%);backdrop-filter:blur(18px) saturate(170%)}
+  .tile[aria-pressed="true"]{border-color:var(--accent);box-shadow:var(--glass-shadow),inset 0 0 0 1.5px var(--accent)}
 }
 </style>
 </head>
@@ -249,10 +260,8 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
     <h1 class="brand"><img class="logo" src="icon-192.png?v=2" alt="" width="40" height="40">Wishlist Kita</h1>
     <button class="menu-btn" id="menu-btn" type="button" aria-label="Menu" aria-expanded="false"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
   </header>
-  <div class="hero">
-    <p class="hello" id="hello">Selamat datang</p>
-    <h2 class="headline" id="headline">Benda menarik yang kita jumpa, semua dalam satu tempat.</h2>
-  </div>
+  <p class="hello hello-top" id="hello">Selamat datang</p>
+  <div class="tiles" id="tiles" role="group" aria-label="Ringkasan"></div>
   <div class="note-bar" id="status" hidden></div>
 
   <section class="sec" aria-labelledby="rem-l">
@@ -394,9 +403,24 @@ const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt
 const BULAN = ["Jan","Feb","Mac","Apr","Mei","Jun","Jul","Ogo","Sep","Okt","Nov","Dis"];
 
 let items = [], sb = null, myId = null, names = {}, canWrite = true, channel = null;
-let state = {cat:"semua", q:"", status:"semua", open:null};
+let state = {cat:"semua", q:"", status:"semua", view:"semua", open:null};
 try { const st = localStorage.getItem("sk-status"); if (st) state.status = st; else if (localStorage.getItem("sk-hide") === "1") state.status = "pending"; } catch(e) {}
 const STATUS = {semua:"Semua", pending:"Pending", done:"Completed"};
+const todayISO = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; };
+const TILES = {
+  today:    {label:"Hari Ini",    test: i => i.cat === "ingat" && !i.done && i.date === todayISO(),
+             icon:`<svg viewBox="0 0 30 30"><rect x="3" y="6" width="24" height="21" rx="6" fill="#EF5B5B"/><rect x="8.5" y="3" width="3.2" height="7" rx="1.6" fill="#EF5B5B"/><rect x="18.3" y="3" width="3.2" height="7" rx="1.6" fill="#EF5B5B"/><rect x="3" y="12" width="24" height="2.2" fill="#fff" opacity=".7"/></svg>`},
+  scheduled:{label:"Akan Datang", test: i => i.cat === "ingat" && !i.done && i.date > todayISO(),
+             icon:`<svg viewBox="0 0 30 30"><circle cx="15" cy="15" r="12.5" fill="#5B9BEF"/><path d="M15 8.5V15h5" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`},
+  fav:      {label:"Kegemaran",   test: i => !!i.fav,
+             icon:`<svg viewBox="0 0 30 30"><path d="M15 26s-11-6.6-11-14.2C4 7.7 7 5 10.4 5c2 0 3.6 1 4.6 2.6C16 6 17.6 5 19.6 5 23 5 26 7.7 26 11.8 26 19.4 15 26 15 26z" fill="#F2B730"/></svg>`},
+  place:    {label:"Tempat",      test: i => !!i.place,
+             icon:`<svg viewBox="0 0 30 30"><path d="M15 28s-9.5-9.2-9.5-15.5a9.5 9.5 0 0 1 19 0C24.5 18.8 15 28 15 28z" fill="#2FB5C6"/><circle cx="15" cy="12.5" r="3.6" fill="#fff"/></svg>`},
+  pending:  {label:"Pending", status:"pending", test: i => !i.done,
+             icon:`<svg viewBox="0 0 30 30"><rect x="4" y="4" width="22" height="22" rx="7" fill="#8C6CE0"/><path d="M10 12.5h10M10 17.5h7" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>`},
+  done:     {label:"Completed", status:"done", test: i => !!i.done,
+             icon:`<svg viewBox="0 0 30 30"><circle cx="15" cy="15" r="12.5" fill="#8E97A6"/><path d="M9.5 15.5l3.8 3.8 7.2-7.6" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`},
+};
 
 /* ---------- helpers ---------- */
 function source(url){
@@ -452,11 +476,12 @@ function render(){
   const saved = items.filter(i => i.cat !== "ingat");
   const rems = items.filter(i => i.cat === "ingat" && i.date);
   const upcoming = rems.filter(i => !i.done).sort((a,b) => a.date.localeCompare(b.date));
-  const pending = saved.filter(i => !i.done).length;
 
-  $("#headline").innerHTML = items.length
-    ? `Ada <b>${saved.length}</b> benda kita simpan, <b>${pending}</b> belum cuba.`
-    : "Benda menarik yang kita jumpa, semua dalam satu tempat.";
+  // petak ringkasan
+  $("#tiles").innerHTML = Object.entries(TILES).map(([k,t]) => {
+    const on = t.status ? state.status === t.status : state.view === k;
+    return `<button type="button" class="tile" data-tile="${k}" aria-pressed="${on}"><span class="r1">${t.icon}<span class="tn">${items.filter(t.test).length}</span></span><span class="tl">${t.label}</span></button>`;
+  }).join("");
 
   // reminders strip
   const top = upcoming.slice(0,3);
@@ -469,14 +494,16 @@ function render(){
   for (const k in CATS) counts[k] = items.filter(i => i.cat === k).length;
   $("#chips").innerHTML = [["semua","Semua"], ...Object.entries(CATS).sort((x, y) => counts[y[0]] - counts[x[0]]).map(([k,v]) => [k, v.label])].map(([k,l]) =>
     `<button type="button" class="chip" data-cat="${k}" aria-pressed="${state.cat===k}">${k!=="semua"?`<span class="dot" style="--cc:${tintCss(CATS[k])}"></span>`:""}${esc(l)}<span class="n">${counts[k]}</span></button>`).join("") + (canWrite ? `<button type="button" class="chip new" id="chip-new">+ Kategori</button>` : "");
-  $("#status-btn").textContent = state.status === "semua" ? "Semua status" : STATUS[state.status] + " ✕";
-  $("#status-btn").setAttribute("aria-pressed", state.status !== "semua");
+  const active = [state.view !== "semua" ? TILES[state.view].label : "", state.status !== "semua" ? STATUS[state.status] : ""].filter(Boolean).join(" · ");
+  $("#status-btn").textContent = active ? active + " ✕" : "Semua status";
+  $("#status-btn").setAttribute("aria-pressed", !!active);
   if (!$("#drawer-scrim").hidden) renderDrawer();
 
   // list
   const q = state.q.trim().toLowerCase();
   let list = items.filter(i => (state.cat === "semua" || i.cat === state.cat)
     && (state.status === "semua" || (state.status === "done") === !!i.done)
+    && (state.view === "semua" || TILES[state.view].test(i))
     && (!q || [i.title,i.note,i.place,i.price,source(i.url)].some(v => v && String(v).toLowerCase().includes(q))));
   list.sort((a,b) => {
     if (a.cat === "ingat" && b.cat === "ingat") return (a.done - b.done) || String(a.date||"").localeCompare(String(b.date||""));
@@ -564,7 +591,17 @@ document.addEventListener("click", async e => {
 $("#chips").addEventListener("click", e => { if (e.target.closest("#chip-new")) { openCats(false); return; } const c = e.target.closest(".chip"); if (!c) return; state.cat = c.dataset.cat; state.open = null; render(); });
 $("#q").addEventListener("input", e => { state.q = e.target.value; render(); });
 function setStatus(st){ state.status = st; try{ localStorage.setItem("sk-status", st); }catch(e){} render(); }
-$("#status-btn").addEventListener("click", () => { if (state.status !== "semua") setStatus("semua"); else openDrawer(); });
+$("#status-btn").addEventListener("click", () => {
+  if (state.status !== "semua" || state.view !== "semua") { state.view = "semua"; setStatus("semua"); } else openDrawer();
+});
+$("#tiles").addEventListener("click", e => {
+  const b = e.target.closest("[data-tile]"); if (!b) return;
+  const k = b.dataset.tile, t = TILES[k];
+  if (t.status) { state.view = "semua"; setStatus(state.status === t.status ? "semua" : t.status); }
+  else { state.view = state.view === k ? "semua" : k; state.status = "semua"; render(); }
+  state.open = null;
+  if (state.view !== "semua" || state.status !== "semua") $("#list-l").scrollIntoView({behavior:"smooth"});
+});
 
 /* ---------- menu tepi ---------- */
 function renderDrawer(){
