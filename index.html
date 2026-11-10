@@ -466,11 +466,13 @@ function toast(msg){ const t = $("#toast"); t.textContent = msg; t.hidden = fals
 function status(msg){ const s = $("#status"); s.textContent = msg || ""; s.hidden = !msg; }
 
 /* ---------- greeting ---------- */
-(function(){
-  const h = new Date().getHours();
-  $("#hello").textContent = h < 12 ? "Good morning, love" : h < 18 ? "Good afternoon, love" : "Good evening, love";
-})();
+greet();
 
+function greet(name){
+  const h = new Date().getHours();
+  const part = h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening";
+  $("#hello").textContent = name ? `${part}, ${name}` : part;
+}
 /* ---------- render ---------- */
 function render(){
   const saved = items.filter(i => i.cat !== "ingat");
@@ -848,7 +850,7 @@ async function loadNames(){
   if (!data) return;
   if (!data.length){ status("This email isn’t on the members list. Add it to the members table in Supabase."); canWrite = false; $("#fab").hidden = true; }
   for (const m of data) names[m.email.toLowerCase()] = m.name;
-  const me = names[(myId||"").toLowerCase()]; $("#who").textContent = me || "";
+  const me = names[(myId||"").toLowerCase()]; $("#who").textContent = me || ""; greet(me);
   render();
 }
 function showLogin(){ $("#app").hidden = true; $("#fab").hidden = true; $("#login").hidden = false; }
