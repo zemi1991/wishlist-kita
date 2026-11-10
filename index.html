@@ -467,7 +467,7 @@ function render(){
   // chips
   const counts = {semua: items.length};
   for (const k in CATS) counts[k] = items.filter(i => i.cat === k).length;
-  $("#chips").innerHTML = [["semua","Semua"], ...Object.entries(CATS).map(([k,v]) => [k, v.label])].map(([k,l]) =>
+  $("#chips").innerHTML = [["semua","Semua"], ...Object.entries(CATS).sort((x, y) => counts[y[0]] - counts[x[0]]).map(([k,v]) => [k, v.label])].map(([k,l]) =>
     `<button type="button" class="chip" data-cat="${k}" aria-pressed="${state.cat===k}">${k!=="semua"?`<span class="dot" style="--cc:${tintCss(CATS[k])}"></span>`:""}${esc(l)}<span class="n">${counts[k]}</span></button>`).join("") + (canWrite ? `<button type="button" class="chip new" id="chip-new">+ Kategori</button>` : "");
   $("#status-btn").textContent = state.status === "semua" ? "Semua status" : STATUS[state.status] + " ✕";
   $("#status-btn").setAttribute("aria-pressed", state.status !== "semua");
