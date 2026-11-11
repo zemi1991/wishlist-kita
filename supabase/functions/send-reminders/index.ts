@@ -39,7 +39,41 @@ const before = (min: number) =>
   : min % 60 === 0 ? (min === 60 ? "In 1 hour" : `In ${min / 60} hours`)
   : `In ${min} minutes`;
 
-const WINDOW = 60 * 60e3; // hantar yang terlepas sehingga 1 jam lewat
+const WINDOW = 60 * 60e3;
+
+async function sendTo(subs: { endpoint: string; p256dh: string; auth: string }[], payload: Record<string, unknown>) {
+  let sent = 0;
+  for (const s of subs) {
+    try {
+      await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, JSON.stringify(payload));
+      sent++;
+    } catch (e) {
+      const code = (e as { statusCode?: number }).statusCode;
+      if (code === 404 || code === 410) await sb.from("push_subs").delete().eq("endpoint", s.endpoint);
+    }
+  }
+  return sent;
+}
+
+async function notifyNewItem(id: string) {
+  const json = (o: unknown) => new Response(JSON.stringify(o), { headers: { ...CORS, "Content-Type": "application/json" } });
+  const { data: it } = await sb.from("items").select("id,title,note,cat,by_email,created_at").eq("id", id).maybeSingle();
+  // Hanya item yang baru dibuat (10 minit), dan sekali sahaja
+  if (!it || !it.by_email || Date.now() - Date.parse(it.created_at) > 10 * 60e3) return json({ skipped: true });
+  const { error: dup } = await sb.from("reminder_log").insert({ item_id: it.id, alert_at: it.created_at });
+  if (dup) return json({ skipped: "already sent" });
+  const { data: who } = await sb.from("members").select("name").ilike("email", it.by_email).maybeSingle();
+  const { data: subs } = await sb.from("push_subs").select("endpoint,p256dh,auth,email");
+  const others = (subs ?? []).filter((s) => (s.email || "").toLowerCase() !== it.by_email.toLowerCase());
+  const name = who?.name || "Your partner";
+  const sent = await sendTo(others, {
+    title: it.cat === "ingat" ? `${name} added a reminder` : `${name} shared something`,
+    body: [it.title, it.note].filter(Boolean).join(" · ").slice(0, 160),
+    tag: `new-${it.id}`,
+    url: APP_URL,
+  });
+  return json({ new_item: it.id, sent });
+} // hantar yang terlepas sehingga 1 jam lewat
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: CORS });
@@ -48,6 +82,10 @@ Deno.serve(async (req) => {
   if (new URL(req.url).searchParams.has("key"))
     return new Response(JSON.stringify({ publicKey: keys.publicKey }), { headers: { ...CORS, "Content-Type": "application/json" } });
   webpush.setVapidDetails(APP_URL, keys.publicKey, keys.privateKey);
+
+  // Item baru dikongsi: hantar notifikasi segera kepada pasangan (dipanggil oleh trigger database)
+  const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
+  if (body && body.new_item) return await notifyNewItem(String(body.new_item));
 
   const now = Date.now();
   const from = new Date(now + MYT - 864e5).toISOString().slice(0, 10);

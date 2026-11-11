@@ -143,6 +143,10 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .meta{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12.5px;color:var(--muted);margin-top:2px}
 .meta .src{font-weight:700;color:var(--fg)}
 .badge-done{color:var(--ok);font-weight:700}
+.new-pill{background:var(--accent);color:var(--on-accent);font-size:10px;font-weight:800;letter-spacing:.08em;padding:2px 7px;border-radius:99px;margin-left:4px}
+.label .pill{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:var(--accent);color:var(--on-accent);font-size:11px;letter-spacing:0;margin-left:6px;vertical-align:1px}
+.unread-sec .item{border-color:color-mix(in srgb,var(--accent) 50%,var(--line))}
+.unread-from{margin:-2px 2px 10px;font-size:13px;color:var(--muted)}
 .star{background:none;border:0;padding:2px;align-self:start;line-height:0}
 .star svg{width:20px;height:20px;fill:none;stroke:var(--faint);stroke-width:1.6}
 .star[aria-pressed="true"] svg{fill:#F2B730;stroke:#F2B730}
@@ -263,6 +267,15 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
   <p class="hello hello-top" id="hello">Welcome</p>
   <div class="tiles" id="tiles" role="group" aria-label="Summary"></div>
   <div class="note-bar" id="status" hidden></div>
+
+  <section class="sec unread-sec" id="unread-sec" hidden aria-labelledby="unread-l">
+    <div class="sec-head">
+      <h3 class="label" id="unread-l">New for you<span class="pill" id="unread-n"></span></h3>
+      <button class="link-btn" id="read-all" type="button">Mark all as read</button>
+    </div>
+    <p class="unread-from" id="unread-from"></p>
+    <ul class="list" id="unread-list"></ul>
+  </section>
 
   <section class="sec" aria-labelledby="rem-l">
     <div class="sec-head">
@@ -501,9 +514,22 @@ function render(){
   $("#status-btn").setAttribute("aria-pressed", !!active);
   if (!$("#drawer-scrim").hidden) renderDrawer();
 
+  // belum dibaca
+  const unread = items.filter(i => isUnread(i) || readingNow.has(i.id)).sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+  const unreadIds = new Set(unread.map(i => i.id));
+  const nUnread = items.filter(isUnread).length;
+  $("#unread-sec").hidden = !unread.length;
+  $("#unread-n").textContent = nUnread || "";
+  $("#unread-n").hidden = !nUnread;
+  $("#read-all").hidden = !nUnread;
+  const from = [...new Set(unread.map(i => who(i.by)))].join(" & ");
+  $("#unread-from").textContent = from ? `Shared by ${from}. Tap one to open it.` : "";
+  $("#unread-list").innerHTML = unread.map(itemRow).join("");
+  try { if (navigator.setAppBadge) nUnread ? navigator.setAppBadge(nUnread) : navigator.clearAppBadge(); } catch(_) {}
+
   // list
   const q = state.q.trim().toLowerCase();
-  let list = items.filter(i => (state.cat === "semua" || i.cat === state.cat)
+  let list = items.filter(i => !unreadIds.has(i.id) && (state.cat === "semua" || i.cat === state.cat)
     && (state.status === "semua" || (state.status === "done") === !!i.done)
     && (state.view === "semua" || TILES[state.view].test(i))
     && (!q || [i.title,i.note,i.place,i.price,source(i.url)].some(v => v && String(v).toLowerCase().includes(q))));
@@ -521,6 +547,16 @@ function remRow(i){
     <div style="min-width:0"><div class="rem-title">${esc(i.title)}</div><div class="rem-sub">${fmtDate(i.date)}${i.at_time?` · ${fmtTime(i.at_time)}`:""}${i.early_min?` · 🔔 ${earlyLabel(i.early_min)}`:""}${i.note?` · ${esc(i.note.split("\n")[0]).slice(0,60)}`:""}</div></div>
     <span class="days ${r.c}">${r.t}</span></li>`;
 }
+const lc = v => String(v || "").toLowerCase();
+function isUnread(i){ return !!myId && !!i.by && lc(i.by) !== lc(myId) && !(i.seen_by || []).some(e => lc(e) === lc(myId)); }
+const readingNow = new Set();   // dibuka sesi ini: kekal di "New for you" sampai ditutup
+async function markRead(list){
+  const todo = list.filter(isUnread);
+  if (!todo.length) return;
+  for (const it of todo) it.seen_by = [...(it.seen_by || []), myId];
+  if (!sb) return;
+  await Promise.all(todo.map(it => sb.from("items").update({ seen_by: it.seen_by }).eq("id", it.id)));
+}
 function itemRow(i){
   const c = CATS[i.cat] || CATS.idea, open = state.open === i.id, src = source(i.url);
   const meta = [];
@@ -534,7 +570,7 @@ function itemRow(i){
   return `<li class="item${open?" open":""}${i.done?" done":""}">
     <div class="row">
       <button type="button" class="row-main" data-act="open" data-id="${esc(i.id)}" aria-expanded="${open}" style="background:none;border:0;padding:0;text-align:left">
-        <span class="cat"><span class="dot" style="--cc:${tintCss(c)}"></span>${esc(c.label)}</span>
+        <span class="cat"><span class="dot" style="--cc:${tintCss(c)}"></span>${esc(c.label)}${isUnread(i)?`<span class="new-pill">NEW</span>`:""}</span>
         <span class="title">${esc(i.title)}</span>
         ${i.note?`<span class="desc">${esc(i.note)}</span>`:""}
         <span class="meta">${meta.join("")}</span>
@@ -580,7 +616,12 @@ document.addEventListener("click", async e => {
   const b = e.target.closest("[data-act]"); if (!b) return;
   const id = b.dataset.id, it = byId(id); if (!it) return;
   const act = b.dataset.act;
-  if (act === "open"){ state.open = state.open === id ? null : id; armed = null; render(); return; }
+  if (act === "open"){
+    state.open = state.open === id ? null : id; armed = null;
+    for (const k of [...readingNow]) if (k !== state.open) readingNow.delete(k);
+    if (state.open === id && isUnread(it)) { readingNow.add(id); markRead([it]).catch(() => {}); }
+    render(); return;
+  }
   if (act === "fav"){ it.fav = !it.fav; render(); write(id, {fav: it.fav}).catch(()=>{}); return; }
   if (act === "done"){ it.done = !it.done; render(); write(id, {done: it.done}).catch(()=>{}); if (it.done) toast("Marked done"); return; }
   if (act === "edit"){ openSheet(it); return; }
@@ -593,6 +634,12 @@ document.addEventListener("click", async e => {
 $("#chips").addEventListener("click", e => { if (e.target.closest("#chip-new")) { openCats(false); return; } const c = e.target.closest(".chip"); if (!c) return; state.cat = c.dataset.cat; state.open = null; render(); });
 $("#q").addEventListener("input", e => { state.q = e.target.value; render(); });
 function setStatus(st){ state.status = st; try{ localStorage.setItem("sk-status", st); }catch(e){} render(); }
+$("#read-all").addEventListener("click", async () => {
+  const list = items.filter(isUnread);
+  readingNow.clear(); state.open = null;
+  await markRead(list).catch(() => {});
+  render(); toast("All marked as read");
+});
 $("#status-btn").addEventListener("click", () => {
   if (state.status !== "semua" || state.view !== "semua") { state.view = "semua"; setStatus("semua"); } else openDrawer();
 });
@@ -836,7 +883,7 @@ $("#notif-btn").addEventListener("click", async () => {
 });
 
 /* ---------- boot ---------- */
-const fromRow = r => ({...r, by: r.by_email, createdAt: Date.parse(r.created_at) || Date.now(), date: r.date || "", at_time: r.at_time || "", early_min: r.early_min || null});
+const fromRow = r => ({...r, by: r.by_email, createdAt: Date.parse(r.created_at) || Date.now(), date: r.date || "", at_time: r.at_time || "", early_min: r.early_min || null, seen_by: r.seen_by || []});
 let loading = 0;
 async function load(){
   const my = ++loading;
