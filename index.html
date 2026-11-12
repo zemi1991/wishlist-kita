@@ -525,7 +525,7 @@ function render(){
   $("#unread-n").hidden = !nUnread;
   $("#read-all").hidden = !nUnread;
   const from = [...new Set(unread.map(i => who(i.by)))].join(" & ");
-  $("#unread-from").textContent = from ? `Shared by ${from}. Tap one to open it.` : "";
+  $("#unread-from").textContent = from ? `Shared by ${from}. Open the link or tap Mark as read.` : "";
   $("#unread-list").innerHTML = unread.map(itemRow).join("");
   try { if (navigator.setAppBadge) nUnread ? navigator.setAppBadge(nUnread) : navigator.clearAppBadge(); } catch(_) {}
 
@@ -600,7 +600,8 @@ function itemRow(i){
       <button type="button" class="star" data-act="fav" data-id="${esc(i.id)}" aria-pressed="${!!i.fav}" aria-label="Favourite"><svg viewBox="0 0 24 24"><path d="M12 20.3s-7.5-4.6-9.2-9.3C1.6 7.6 3.9 4.5 7.2 4.5c2 0 3.6 1.1 4.8 2.8 1.2-1.7 2.8-2.8 4.8-2.8 3.3 0 5.6 3.1 4.4 6.5-1.7 4.7-9.2 9.3-9.2 9.3z" stroke-linejoin="round"/></svg></button>
     </div>
     ${open?`<div class="actions">
-      ${i.url?`<a class="act primary" href="${esc(i.url)}" target="_blank" rel="noopener noreferrer">Open ${esc(src||"link")} ↗</a>`:""}
+      ${i.url?`<a class="act primary" href="${esc(i.url)}" target="_blank" rel="noopener noreferrer" data-read="${esc(i.id)}">Open ${esc(src||"link")} ↗</a>`:""}
+      ${isUnread(i)?`<button type="button" class="act" data-act="read" data-id="${esc(i.id)}">Mark as read</button>`:""}
       <button type="button" class="act" data-act="done" data-id="${esc(i.id)}">${doneLbl}</button>
       <button type="button" class="act" data-act="edit" data-id="${esc(i.id)}">Edit</button>
       <button type="button" class="act danger" data-act="del" data-id="${esc(i.id)}">Delete</button>
@@ -641,9 +642,10 @@ document.addEventListener("click", async e => {
   if (act === "open"){
     state.open = state.open === id ? null : id; armed = null;
     for (const k of [...readingNow]) if (k !== state.open) readingNow.delete(k);
-    if (state.open === id && isUnread(it)) { readingNow.add(id); markRead([it]).catch(() => {}); }
+    if (state.open === id && isUnread(it)) readingNow.add(id);
     render(); return;
   }
+  if (act === "read"){ readingNow.add(id); markRead([it]).catch(() => {}); render(); toast("Marked as read"); return; }
   if (act === "fav"){ it.fav = !it.fav; render(); write(id, {fav: it.fav}).catch(()=>{}); return; }
   if (act === "done"){ it.done = !it.done; render(); write(id, {done: it.done}).catch(()=>{}); if (it.done) toast("Marked done"); return; }
   if (act === "edit"){ openSheet(it); return; }
@@ -656,6 +658,11 @@ document.addEventListener("click", async e => {
 $("#chips").addEventListener("click", e => { if (e.target.closest("#chip-new")) { openCats(false); return; } const c = e.target.closest(".chip"); if (!c) return; state.cat = c.dataset.cat; state.open = null; render(); });
 $("#q").addEventListener("input", e => { state.q = e.target.value; render(); });
 function setStatus(st){ state.status = st; try{ localStorage.setItem("sk-status", st); }catch(e){} render(); }
+document.addEventListener("click", e => {
+  const a = e.target.closest("a[data-read]"); if (!a) return;
+  const it = byId(a.dataset.read);
+  if (it && isUnread(it)) { readingNow.add(it.id); markRead([it]).catch(() => {}); setTimeout(render, 0); }
+});
 $("#read-all").addEventListener("click", async () => {
   const list = items.filter(isUnread);
   readingNow.clear(); state.open = null;
