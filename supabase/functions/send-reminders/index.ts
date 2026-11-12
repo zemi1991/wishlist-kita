@@ -41,15 +41,22 @@ const before = (min: number) =>
 
 const WINDOW = 60 * 60e3;
 
-async function sendTo(subs: { endpoint: string; p256dh: string; auth: string }[], payload: Record<string, unknown>) {
+// Rekod setiap percubaan hantar (untuk siasat bila notifikasi tak sampai)
+async function logPush(s: { endpoint: string; email?: string }, status: number, error: string, title: unknown) {
+  await sb.from("push_log").insert({ email: s.email ?? null, host: new URL(s.endpoint).host, status, error: error.slice(0, 300), title: String(title ?? "").slice(0, 120) });
+}
+
+async function sendTo(subs: { endpoint: string; p256dh: string; auth: string; email?: string }[], payload: Record<string, unknown>) {
   let sent = 0;
   for (const s of subs) {
     try {
-      await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, JSON.stringify(payload));
+      const res = await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, JSON.stringify(payload), { TTL: 86400, urgency: "high" });
       sent++;
+      await logPush(s, res.statusCode, "", payload.title);
     } catch (e) {
-      const code = (e as { statusCode?: number }).statusCode;
-      if (code === 404 || code === 410) await sb.from("push_subs").delete().eq("endpoint", s.endpoint);
+      const err = e as { statusCode?: number; body?: string; message?: string };
+      await logPush(s, err.statusCode ?? 0, err.body || err.message || "", payload.title);
+      if (err.statusCode === 404 || err.statusCode === 410) await sb.from("push_subs").delete().eq("endpoint", s.endpoint);
     }
   }
   return sent;
@@ -106,6 +113,13 @@ Deno.serve(async (req) => {
   const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
   if (body && body.new_item) return await notifyNewItem(String(body.new_item));
   if (body && body.new_comment) return await notifyNewComment(String(body.new_comment));
+  if (body && body.test_to && body.test_key) {
+    const { data: k } = await sb.from("app_keys").select("private_key").eq("id", 2).maybeSingle();
+    if (!k || k.private_key !== body.test_key) return new Response("forbidden", { status: 403, headers: CORS });
+    const { data: subs } = await sb.from("push_subs").select("endpoint,p256dh,auth,email").ilike("email", String(body.test_to));
+    const sent = await sendTo(subs ?? [], { title: "Test notification", body: "If you can see this, notifications work 👍", tag: "test", url: APP_URL });
+    return new Response(JSON.stringify({ test: true, subs: (subs ?? []).length, sent }), { headers: { ...CORS, "Content-Type": "application/json" } });
+  }
 
   const now = Date.now();
   const from = new Date(now + MYT - 864e5).toISOString().slice(0, 10);
@@ -133,21 +147,8 @@ Deno.serve(async (req) => {
 
   let sent = 0;
   if (due.length) {
-    const { data: subs } = await sb.from("push_subs").select("endpoint,p256dh,auth");
-    for (const s of subs ?? []) {
-      for (const n of due) {
-        try {
-          await webpush.sendNotification(
-            { endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } },
-            JSON.stringify({ ...n, url: APP_URL }),
-          );
-          sent++;
-        } catch (e) {
-          const code = (e as { statusCode?: number }).statusCode;
-          if (code === 404 || code === 410) { await sb.from("push_subs").delete().eq("endpoint", s.endpoint); break; }
-        }
-      }
-    }
+    const { data: subs } = await sb.from("push_subs").select("endpoint,p256dh,auth,email");
+    for (const n of due) sent += await sendTo(subs ?? [], { ...n, url: APP_URL });
   }
   return new Response(JSON.stringify({ now: new Date(now).toISOString(), reminders: due.length, sent }), { headers: { ...CORS, "Content-Type": "application/json" } });
 });
