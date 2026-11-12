@@ -143,6 +143,8 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .meta{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12.5px;color:var(--muted);margin-top:2px}
 .meta .src{font-weight:700;color:var(--fg)}
 .badge-done{color:var(--ok);font-weight:700}
+.receipt{font-weight:600;color:var(--muted)}
+.receipt.seen{color:var(--accent-ink)}
 .new-pill{background:var(--accent);color:var(--on-accent);font-size:10px;font-weight:800;letter-spacing:.08em;padding:2px 7px;border-radius:99px;margin-left:4px}
 .label .pill{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:var(--accent);color:var(--on-accent);font-size:11px;letter-spacing:0;margin-left:6px;vertical-align:1px}
 .unread-sec .item{border-color:color-mix(in srgb,var(--accent) 50%,var(--line))}
@@ -553,9 +555,28 @@ const readingNow = new Set();   // dibuka sesi ini: kekal di "New for you" sampa
 async function markRead(list){
   const todo = list.filter(isUnread);
   if (!todo.length) return;
-  for (const it of todo) it.seen_by = [...(it.seen_by || []), myId];
+  const at = new Date().toISOString();
+  for (const it of todo) { it.seen_by = [...(it.seen_by || []), myId]; it.seen_at = {...(it.seen_at || {}), [lc(myId)]: at}; }
   if (!sb) return;
-  await Promise.all(todo.map(it => sb.from("items").update({ seen_by: it.seen_by }).eq("id", it.id)));
+  await Promise.all(todo.map(it => sb.from("items").update({ seen_by: it.seen_by, seen_at: it.seen_at }).eq("id", it.id)));
+}
+function seenWhen(iso){
+  const d = new Date(iso); if (isNaN(d)) return "";
+  const t = fmtTime(`${d.getHours()}:${String(d.getMinutes()).padStart(2,"0")}`);
+  const day = new Date(d); day.setHours(0,0,0,0);
+  const today = new Date(); today.setHours(0,0,0,0);
+  const diff = Math.round((today - day) / 864e5);
+  return `${diff === 0 ? "today" : diff === 1 ? "yesterday" : `${d.getDate()} ${BULAN[d.getMonth()]}`}, ${t}`;
+}
+// Resit baca: hanya pada item yang saya kongsi
+function receipt(i){
+  if (!myId || lc(i.by) !== lc(myId)) return "";
+  const others = Object.keys(names).filter(e => e !== lc(myId));
+  if (!others.length) return "";
+  const seen = others.filter(e => (i.seen_by || []).some(x => lc(x) === e));
+  if (!seen.length) return `<span class="receipt">✓ Not seen yet</span>`;
+  const e = seen[0], t = (i.seen_at || {})[e];
+  return `<span class="receipt seen">✓✓ Seen by ${esc(names[e] || "partner")}${t ? " · " + seenWhen(t) : ""}</span>`;
 }
 function itemRow(i){
   const c = CATS[i.cat] || CATS.idea, open = state.open === i.id, src = source(i.url);
@@ -566,6 +587,7 @@ function itemRow(i){
   if (i.price) meta.push(`<span>RM ${esc(i.price)}</span>`);
   if (i.done && i.cat !== "ingat") meta.push(`<span class="badge-done">${i.cat==="beli"?"Bought":i.cat==="makan"?"Tried":i.cat==="jalan"?"Visited":"Done"}</span>`);
   meta.push(`<span>${esc([who(i.by), ago(i.createdAt||Date.now())].filter(Boolean).join(" · "))}</span>`);
+  const rc = receipt(i); if (rc) meta.push(rc);
   const doneLbl = i.done ? "Mark not done" : i.cat==="beli"?"Bought it":i.cat==="makan"?"Tried it":i.cat==="jalan"?"Been there":"Mark done";
   return `<li class="item${open?" open":""}${i.done?" done":""}">
     <div class="row">
@@ -886,7 +908,7 @@ $("#notif-btn").addEventListener("click", async () => {
 });
 
 /* ---------- boot ---------- */
-const fromRow = r => ({...r, by: r.by_email, createdAt: Date.parse(r.created_at) || Date.now(), date: r.date || "", at_time: r.at_time || "", early_min: r.early_min || null, seen_by: r.seen_by || []});
+const fromRow = r => ({...r, by: r.by_email, createdAt: Date.parse(r.created_at) || Date.now(), date: r.date || "", at_time: r.at_time || "", early_min: r.early_min || null, seen_by: r.seen_by || [], seen_at: r.seen_at || {}});
 let loading = 0;
 async function load(){
   const my = ++loading;
