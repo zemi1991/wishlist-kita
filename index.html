@@ -864,8 +864,11 @@ async function checkNotif(){
   if (Notification.permission === "denied"){ notifUI("blocked"); return; }
   try {
     const reg = await navigator.serviceWorker.ready;
-    const sub = await reg.pushManager.getSubscription();
-    if (sub && Notification.permission === "granted"){ saveSub(sub).catch(() => {}); notifUI("on"); }
+    let sub = await reg.pushManager.getSubscription();
+    // Kebenaran dah diberi tapi langganan hilang (cth. app dipasang semula): sambung semula tanpa tanya
+    if (!sub && Notification.permission === "granted")
+      sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64ToBytes(key) }).catch(() => null);
+    if (sub && Notification.permission === "granted"){ await saveSub(sub).catch(() => {}); notifUI("on"); }
     else notifUI("off");
   } catch(_) { notifUI("off"); }
 }

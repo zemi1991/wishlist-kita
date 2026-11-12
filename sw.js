@@ -1,5 +1,5 @@
 // Network-first: sentiasa ambil versi terbaru, guna cache bila offline.
-const CACHE = "wishlist-kita-v17";
+const CACHE = "wishlist-kita-v18";
 const SHELL = ["./", "index.html", "config.js", "manifest.webmanifest", "icon-192.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL))); self.skipWaiting(); });
 self.addEventListener("activate", e => { e.waitUntil(caches.keys().then(ks => Promise.all(ks.filter(k => k !== CACHE).map(k => caches.delete(k))))); self.clients.claim(); });
@@ -29,4 +29,11 @@ self.addEventListener("notificationclick", e => {
     for (const w of ws) if (w.url.startsWith(self.registration.scope) && "focus" in w) return w.focus();
     return clients.openWindow(target);
   }));
+});
+
+// Pelayar menukar langganan: langgan semula dengan kunci yang sama (app simpan yang baru bila dibuka)
+self.addEventListener("pushsubscriptionchange", e => {
+  const opts = e.oldSubscription && e.oldSubscription.options;
+  if (!opts || !opts.applicationServerKey) return;
+  e.waitUntil(self.registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: opts.applicationServerKey }).catch(() => {}));
 });
