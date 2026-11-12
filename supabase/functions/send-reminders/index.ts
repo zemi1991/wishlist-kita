@@ -55,6 +55,25 @@ async function sendTo(subs: { endpoint: string; p256dh: string; auth: string }[]
   return sent;
 }
 
+async function notifyNewComment(id: string) {
+  const json = (o: unknown) => new Response(JSON.stringify(o), { headers: { ...CORS, "Content-Type": "application/json" } });
+  const { data: c } = await sb.from("comments").select("id,item_id,body,by_email,created_at").eq("id", id).maybeSingle();
+  if (!c || !c.by_email || Date.now() - Date.parse(c.created_at) > 10 * 60e3) return json({ skipped: true });
+  const { error: dup } = await sb.from("reminder_log").insert({ item_id: c.id, alert_at: c.created_at });
+  if (dup) return json({ skipped: "already sent" });
+  const { data: it } = await sb.from("items").select("title").eq("id", c.item_id).maybeSingle();
+  const { data: who } = await sb.from("members").select("name").ilike("email", c.by_email).maybeSingle();
+  const { data: subs } = await sb.from("push_subs").select("endpoint,p256dh,auth,email");
+  const others = (subs ?? []).filter((s) => (s.email || "").toLowerCase() !== c.by_email.toLowerCase());
+  const sent = await sendTo(others, {
+    title: `${who?.name || "Your partner"} commented on ${it?.title || "an item"}`,
+    body: String(c.body).slice(0, 160),
+    tag: `cmt-${c.id}`,
+    url: APP_URL,
+  });
+  return json({ new_comment: c.id, sent });
+}
+
 async function notifyNewItem(id: string) {
   const json = (o: unknown) => new Response(JSON.stringify(o), { headers: { ...CORS, "Content-Type": "application/json" } });
   const { data: it } = await sb.from("items").select("id,title,note,cat,by_email,created_at").eq("id", id).maybeSingle();
@@ -86,6 +105,7 @@ Deno.serve(async (req) => {
   // Item baru dikongsi: hantar notifikasi segera kepada pasangan (dipanggil oleh trigger database)
   const body = req.method === "POST" ? await req.json().catch(() => ({})) : {};
   if (body && body.new_item) return await notifyNewItem(String(body.new_item));
+  if (body && body.new_comment) return await notifyNewComment(String(body.new_comment));
 
   const now = Date.now();
   const from = new Date(now + MYT - 864e5).toISOString().slice(0, 10);

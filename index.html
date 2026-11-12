@@ -144,6 +144,17 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .meta .src{font-weight:700;color:var(--fg)}
 .badge-done{color:var(--ok);font-weight:700}
 .receipt{font-weight:600;color:var(--muted)}
+.comments{border-top:1px solid var(--line);padding:12px 0 15px;display:flex;flex-direction:column;gap:9px}
+.comments .label{margin:0 0 2px}
+.cmt{background:var(--bg);border-radius:12px;padding:9px 12px;max-width:92%}
+.cmt.mine{background:var(--accent-soft);align-self:flex-end}
+.cmt-head{display:flex;justify-content:space-between;gap:10px;font-size:12px;color:var(--muted);font-weight:600}
+.cmt p{margin:3px 0 0;font-size:14.5px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}
+.cmt-del{background:none;border:0;padding:0;color:var(--muted);font-size:12px;text-decoration:underline;text-underline-offset:2px}
+.cmt-new{display:flex;gap:8px;align-items:flex-end;margin-top:2px}
+.cmt-new textarea{flex:1;min-width:0;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:10px 12px;font-size:15px;line-height:1.4;resize:none;min-height:44px;max-height:160px;outline:none}
+.cmt-new textarea:focus{border-color:var(--accent)}
+.cmt-new button{flex:none;border:0;border-radius:12px;padding:11px 15px;background:var(--accent);color:var(--on-accent);font-weight:700;font-size:14px}
 .receipt.seen{color:var(--accent-ink)}
 .new-pill{background:var(--accent);color:var(--on-accent);font-size:10px;font-weight:800;letter-spacing:.08em;padding:2px 7px;border-radius:99px;margin-left:4px}
 .label .pill{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:var(--accent);color:var(--on-accent);font-size:11px;letter-spacing:0;margin-left:6px;vertical-align:1px}
@@ -490,6 +501,11 @@ function greet(name){
 }
 /* ---------- render ---------- */
 function render(){
+  const ae = document.activeElement, focusCmt = ae && ae.dataset ? ae.dataset.cmt : null, caret = focusCmt ? ae.selectionStart : 0;
+  renderAll();
+  if (focusCmt) { const t = document.querySelector(`textarea[data-cmt="${CSS.escape(focusCmt)}"]`); if (t) { t.focus(); t.setSelectionRange(caret, caret); } }
+}
+function renderAll(){
   const saved = items.filter(i => i.cat !== "ingat");
   const rems = items.filter(i => i.cat === "ingat" && i.date);
   const upcoming = rems.filter(i => !i.done).sort((a,b) => a.date.localeCompare(b.date));
@@ -517,15 +533,15 @@ function render(){
   if (!$("#drawer-scrim").hidden) renderDrawer();
 
   // belum dibaca
-  const unread = items.filter(i => isUnread(i) || readingNow.has(i.id)).sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
+  const unread = items.filter(i => isUnread(i) || hasNewComment(i) || readingNow.has(i.id)).sort((a,b) => (b.createdAt||0) - (a.createdAt||0));
   const unreadIds = new Set(unread.map(i => i.id));
-  const nUnread = items.filter(isUnread).length;
+  const nUnread = items.filter(i => isUnread(i) || hasNewComment(i)).length;
   $("#unread-sec").hidden = !unread.length;
   $("#unread-n").textContent = nUnread || "";
   $("#unread-n").hidden = !nUnread;
   $("#read-all").hidden = !nUnread;
-  const from = [...new Set(unread.map(i => who(i.by)))].join(" & ");
-  $("#unread-from").textContent = from ? `Shared by ${from}. Open the link or tap Mark as read.` : "";
+  const from = [...new Set(unread.map(i => isUnread(i) ? who(i.by) : who((comments.filter(c => c.item_id === i.id && lc(c.by_email) !== lc(myId)).pop() || {}).by_email || i.by)))].filter(Boolean).join(" & ");
+  $("#unread-from").textContent = from ? `From ${from}. Tap an item to see it.` : "";
   $("#unread-list").innerHTML = unread.map(itemRow).join("");
   try { if (navigator.setAppBadge) nUnread ? navigator.setAppBadge(nUnread) : navigator.clearAppBadge(); } catch(_) {}
 
@@ -550,8 +566,26 @@ function remRow(i){
     <span class="days ${r.c}">${r.t}</span></li>`;
 }
 const lc = v => String(v || "").toLowerCase();
+function hasNewComment(i){
+  if (!myId) return false;
+  const seen = Date.parse((i.cmt_seen || {})[lc(myId)] || 0) || 0;
+  return comments.some(c => c.item_id === i.id && lc(c.by_email) !== lc(myId) && Date.parse(c.created_at) > seen);
+}
+async function markCommentsRead(list){
+  const todo = list.filter(hasNewComment);
+  if (!todo.length) return;
+  for (const it of todo) {
+    // ambil yang lebih lewat antara jam telefon dan komen terakhir (elak beza jam telefon/pelayan)
+    const last = Math.max(Date.now(), ...comments.filter(c => c.item_id === it.id).map(c => Date.parse(c.created_at) || 0));
+    it.cmt_seen = {...(it.cmt_seen || {}), [lc(myId)]: new Date(last).toISOString()};
+  }
+  if (!sb) return;
+  await Promise.all(todo.map(it => sb.from("items").update({ cmt_seen: it.cmt_seen }).eq("id", it.id)));
+}
 function isUnread(i){ return !!myId && !!i.by && lc(i.by) !== lc(myId) && !(i.seen_by || []).some(e => lc(e) === lc(myId)); }
-const readingNow = new Set();   // dibuka sesi ini: kekal di "New for you" sampai ditutup
+const readingNow = new Set();
+let comments = [];              // semua komen, ikut masa
+const drafts = {};              // komen yang belum dihantar, ikut item   // dibuka sesi ini: kekal di "New for you" sampai ditutup
 async function markRead(list){
   const todo = list.filter(isUnread);
   if (!todo.length) return;
@@ -585,6 +619,8 @@ function itemRow(i){
   if (src) meta.push(`<span class="src">${esc(src)} ↗</span>`);
   if (i.place) meta.push(`<span>${esc(i.place)}</span>`);
   if (i.price) meta.push(`<span>RM ${esc(i.price)}</span>`);
+  const cm = comments.filter(c => c.item_id === i.id);
+  if (cm.length) meta.push(`<span>💬 ${cm.length}</span>`);
   if (i.done && i.cat !== "ingat") meta.push(`<span class="badge-done">${i.cat==="beli"?"Bought":i.cat==="makan"?"Tried":i.cat==="jalan"?"Visited":"Done"}</span>`);
   meta.push(`<span>${esc([who(i.by), ago(i.createdAt||Date.now())].filter(Boolean).join(" · "))}</span>`);
   const rc = receipt(i); if (rc) meta.push(rc);
@@ -592,7 +628,7 @@ function itemRow(i){
   return `<li class="item${open?" open":""}${i.done?" done":""}">
     <div class="row">
       <button type="button" class="row-main" data-act="open" data-id="${esc(i.id)}" aria-expanded="${open}" style="background:none;border:0;padding:0;text-align:left">
-        <span class="cat"><span class="dot" style="--cc:${tintCss(c)}"></span>${esc(c.label)}${isUnread(i)?`<span class="new-pill">NEW</span>`:""}</span>
+        <span class="cat"><span class="dot" style="--cc:${tintCss(c)}"></span>${esc(c.label)}${isUnread(i)?`<span class="new-pill">NEW</span>`:hasNewComment(i)?`<span class="new-pill">NEW COMMENT</span>`:""}</span>
         <span class="title">${esc(i.title)}</span>
         ${i.note?`<span class="desc">${esc(i.note)}</span>`:""}
         <span class="meta">${meta.join("")}</span>
@@ -605,6 +641,11 @@ function itemRow(i){
       <button type="button" class="act" data-act="done" data-id="${esc(i.id)}">${doneLbl}</button>
       <button type="button" class="act" data-act="edit" data-id="${esc(i.id)}">Edit</button>
       <button type="button" class="act danger" data-act="del" data-id="${esc(i.id)}">Delete</button>
+    </div>
+    <div class="comments">
+      <p class="label">Comments</p>
+      ${cm.map(c => `<div class="cmt${lc(c.by_email) === lc(myId) ? " mine" : ""}"><div class="cmt-head"><span>${esc(who(c.by_email))} · ${seenWhen(c.created_at)}</span>${lc(c.by_email) === lc(myId) ? `<button type="button" class="cmt-del" data-act="cmt-del" data-id="${esc(i.id)}" data-cid="${esc(c.id)}">Delete</button>` : ""}</div><p>${esc(c.body)}</p></div>`).join("")}
+      ${canWrite ? `<div class="cmt-new"><textarea rows="1" maxlength="2000" data-cmt="${esc(i.id)}" aria-label="Write a comment" placeholder="Write a comment or note…">${esc(drafts[i.id] || "")}</textarea><button type="button" data-act="cmt-send" data-id="${esc(i.id)}">Send</button></div>` : ""}
     </div>`:""}
   </li>`;
 }
@@ -642,8 +683,22 @@ document.addEventListener("click", async e => {
   if (act === "open"){
     state.open = state.open === id ? null : id; armed = null;
     for (const k of [...readingNow]) if (k !== state.open) readingNow.delete(k);
-    if (state.open === id && isUnread(it)) readingNow.add(id);
+    if (state.open === id && (isUnread(it) || hasNewComment(it))) readingNow.add(id);
+    if (state.open === id && hasNewComment(it)) markCommentsRead([it]).catch(() => {});
     render(); return;
+  }
+  if (act === "cmt-send"){
+    const t = document.querySelector(`textarea[data-cmt="${CSS.escape(id)}"]`);
+    const body = (t ? t.value : "").trim(); if (!body) { t && t.focus(); return; }
+    const c = { id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()), item_id: id, body, by_email: myId, created_at: new Date().toISOString() };
+    comments.push(c); delete drafts[id]; render();
+    if (sb) { const { error } = await sb.from("comments").insert({ id: c.id, item_id: id, body }); if (error) { toast("Couldn’t send. Try again."); comments = comments.filter(x => x.id !== c.id); drafts[id] = body; render(); } }
+    return;
+  }
+  if (act === "cmt-del"){
+    const cid = b.dataset.cid; comments = comments.filter(x => x.id !== cid); render();
+    if (sb) { const { error } = await sb.from("comments").delete().eq("id", cid); if (error) { toast("Couldn’t delete. Try again."); loadComments(); } }
+    return;
   }
   if (act === "read"){ readingNow.add(id); markRead([it]).catch(() => {}); render(); toast("Marked as read"); return; }
   if (act === "fav"){ it.fav = !it.fav; render(); write(id, {fav: it.fav}).catch(()=>{}); return; }
@@ -663,10 +718,15 @@ document.addEventListener("click", e => {
   const it = byId(a.dataset.read);
   if (it && isUnread(it)) { readingNow.add(it.id); markRead([it]).catch(() => {}); setTimeout(render, 0); }
 });
+document.addEventListener("input", e => {
+  const t = e.target; if (!t.dataset || !t.dataset.cmt) return;
+  drafts[t.dataset.cmt] = t.value;
+  t.style.height = "auto"; t.style.height = Math.min(t.scrollHeight, 160) + "px";
+});
 $("#read-all").addEventListener("click", async () => {
-  const list = items.filter(isUnread);
+  const list = items.filter(isUnread), withCmts = items.filter(hasNewComment);
   readingNow.clear(); state.open = null;
-  await markRead(list).catch(() => {});
+  await Promise.all([markRead(list), markCommentsRead(withCmts)]).catch(() => {});
   render(); toast("All marked as read");
 });
 $("#status-btn").addEventListener("click", () => {
@@ -915,8 +975,12 @@ $("#notif-btn").addEventListener("click", async () => {
 });
 
 /* ---------- boot ---------- */
-const fromRow = r => ({...r, by: r.by_email, createdAt: Date.parse(r.created_at) || Date.now(), date: r.date || "", at_time: r.at_time || "", early_min: r.early_min || null, seen_by: r.seen_by || [], seen_at: r.seen_at || {}});
+const fromRow = r => ({...r, by: r.by_email, createdAt: Date.parse(r.created_at) || Date.now(), date: r.date || "", at_time: r.at_time || "", early_min: r.early_min || null, seen_by: r.seen_by || [], seen_at: r.seen_at || {}, cmt_seen: r.cmt_seen || {}});
 let loading = 0;
+async function loadComments(){
+  const { data, error } = await sb.from("comments").select("id,item_id,body,by_email,created_at").order("created_at");
+  if (!error && data) { comments = data; render(); }
+}
 async function load(){
   const my = ++loading;
   const { data, error } = await sb.from("items").select("*").order("created_at", {ascending:false});
@@ -937,12 +1001,13 @@ async function showApp(session){
   myId = session.user.email;
   $("#login").hidden = true; $("#app").hidden = false; $("#fab").hidden = !canWrite;
   render(); status("Loading…");
-  await Promise.all([load(), loadNames(), loadCats()]);
+  await Promise.all([load(), loadNames(), loadCats(), loadComments()]);
   checkNotif();
   if (!channel){
     channel = sb.channel("items-live")
       .on("postgres_changes", {event:"*", schema:"public", table:"items"}, () => load())
       .on("postgres_changes", {event:"*", schema:"public", table:"categories"}, () => loadCats())
+      .on("postgres_changes", {event:"*", schema:"public", table:"comments"}, () => loadComments())
       .subscribe();
   }
 }
