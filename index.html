@@ -941,7 +941,7 @@ function notifUI(mode){
 }
 async function saveSub(sub){
   const j = sub.toJSON();
-  const { error } = await sb.from("push_subs").upsert({ endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth, email: myId });
+  const { error } = await sb.from("push_subs").upsert({ endpoint: j.endpoint, p256dh: j.keys.p256dh, auth: j.keys.auth, email: myId, ua: navigator.userAgent.slice(0, 300) });
   if (error) throw error;
 }
 async function checkNotif(){
